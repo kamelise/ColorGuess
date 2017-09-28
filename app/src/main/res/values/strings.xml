@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">ColorGuess</string>
+    <string name="goToMainScreen">Main Screen</string>
+    <string name="retry">Retry</string>
+    <string name="resume">Resume</string>
+
+    <string name="title_activity_main">MainActivity</string>
+
+</resources>

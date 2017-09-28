@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimaryDark">#303F9F</color>
+
+    <color name="boardColor">#F1F4F6</color>
+
+    <color name="guessedNotDot" type="color">#a4abb0</color>
+    <color name="guessedPlacesDot" type="color">#00b861</color>
+    <color name="guessedColorsDot" type="color">#ff1144</color>
+
+    <color name="colorPrimary" type="color">#084C61</color>
+
+    <color name="color1" type="color">#1A936F</color>
+    <color name="color2" type="color">#FFBF00</color>
+    <color name="color3" type="color">#E83F6F</color>
+    <color name="color4" type="color">#0F6699</color>
+    <color name="color5">#D32F2F</color>
+    <color name="color6">#4D5057</color>
+
+    <color name="black_overlay">#66000000</color>
+    <color name="platinum">#673AB7</color>
+    <color name="paris_green">#FF50C878</color>
+    <color name="persian_rose">#F42999</color>
+    <color name="seal_brown">#4C322D</color>
+    <color name="vivid_cerulean">#09AAEF</color>
+
+    <array name="colors_array">
+        <item>@color/platinum</item>
+        <item>@color/vivid_cerulean</item>
+        <item>@color/color4</item>
+        <item>@color/paris_green</item>
+        <item>@color/color1</item>
+        <item>@color/color2</item>
+        <item>@color/persian_rose</item>
+        <item>@color/color5</item>
+        <item>@color/color6</item>
+        <item>@color/black_overlay</item>
+
+    </array>
+
+</resources>

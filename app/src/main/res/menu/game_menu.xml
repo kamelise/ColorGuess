@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <item
+        android:id="@+id/action_add"
+        android:title="@string/retry"
+        android:orderInCategory="120"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_edt"
+        android:title="@string/resume"
+        android:orderInCategory="130"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_del"
+        android:title="@string/goToMainScreen"
+        android:orderInCategory="140"
+        app:showAsAction="never" />
+
+</menu>
