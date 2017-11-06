@@ -231,7 +231,7 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
             else
                 fCParams.setMargins((int)(field_cell_left_margin), 0, (int)(field_cell_right_margin), 0);
             fieldCell.setLayoutParams(fCParams);
-            fieldCell.setBackgroundResource(R.drawable.rectangle_2_copy_31);
+            fieldCell.setBackgroundResource(R.drawable.field_cell_normal);
             fieldCell.setId(i);
 
             fieldLine.addView(fieldCell);
@@ -249,7 +249,7 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
             sCParams.setMargins((int)stackCellLeftMargin, (int)stackCellTopMargin,
                     (int)stackCellRightMargin, (int)stackCellBottomMargin);
             stackCell.setLayoutParams(sCParams);
-            stackCell.setBackgroundResource(R.drawable.rectangle_2_copy_48);
+            stackCell.setBackgroundResource(R.drawable.stack_cell);
 
             stackLayout.addView(stackCell);
         }
@@ -263,7 +263,7 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
         sCParams.setMargins(0, (int)guessed_cell_top_margin, (int)guessed_cell_right_margin, 0);
 
         guessedCell.setLayoutParams(sCParams);
-        guessedCell.setBackgroundResource(R.drawable.rectangle_2_copy_68);
+        guessedCell.setBackgroundResource(R.drawable.guessed_cell);
         guessedLayout.addView(guessedCell, 0);
     }
 

@@ -114,15 +114,15 @@ public class ShadowCircle extends RelativeLayout {
 
                     if (activeCell >= 0) {
                         if (gameActivity.getActiveCellView() != null)
-                            gameActivity.setActiveCellViewBackground(R.drawable.rectangle_2_copy_31);
+                            gameActivity.setActiveCellViewBackground(R.drawable.field_cell_normal);
                         gameActivity.setActiveCellView(gameActivity.getActiveCellViewById(activeCell));
                     } else {
                         if (gameActivity.getActiveCellView() != null)
-                            gameActivity.setActiveCellViewBackground(R.drawable.rectangle_2_copy_31);
+                            gameActivity.setActiveCellViewBackground(R.drawable.field_cell_normal);
                         gameActivity.setActiveCellView(null);
                     }
                     if (gameActivity.getActiveCellView() != null)
-                        gameActivity.setActiveCellViewBackground(R.drawable.rectangle_2_copy_26_updated);
+                        gameActivity.setActiveCellViewBackground(R.drawable.field_cell_pressed);
                 }
 
                 break;
@@ -204,7 +204,7 @@ public class ShadowCircle extends RelativeLayout {
                 }
 
                 if (gameActivity.getActiveCellView() != null)
-                    gameActivity.setActiveCellViewBackground(R.drawable.rectangle_2_copy_31);
+                    gameActivity.setActiveCellViewBackground(R.drawable.field_cell_normal);
 
                 activeCell = -1;
                 break;

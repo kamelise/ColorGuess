@@ -35,7 +35,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:src="@drawable/ic_play_circle_outline_black_24dp"
+            android:src="@drawable/pause_popup_play_ic"
             android:tint="@color/colorPrimary"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"/>
@@ -60,7 +60,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:src="@drawable/ic_replay_black_24dp"
+            android:src="@drawable/pause_popup_replay_ic"
             android:tint="@color/colorPrimary"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"/>
@@ -85,7 +85,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:src="@drawable/ic_home_black_24dp"
+            android:src="@drawable/pause_popup_home_ic"
             android:tint="@color/colorPrimary"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"/>

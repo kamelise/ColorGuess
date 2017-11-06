@@ -23,7 +23,7 @@
             <ImageView
                 android:layout_width="@dimen/main_buttons_size"
                 android:layout_height="@dimen/main_buttons_size"
-                android:src="@drawable/ic_play_circle_fill"
+                android:src="@drawable/main_scr_play_ic"
                 android:tint="@color/color1"
                 android:layout_margin="@dimen/main_buttons_margin"
                 android:elevation="8dp"
@@ -34,7 +34,7 @@
             <ImageView
                 android:layout_width="@dimen/main_buttons_size"
                 android:layout_height="@dimen/main_buttons_size"
-                android:src="@drawable/ic_stars"
+                android:src="@drawable/main_scr_rating_ic"
                 android:tint="@color/color2"
                 android:layout_margin="@dimen/main_buttons_margin"
                 android:elevation="8dp"
@@ -50,7 +50,7 @@
             <ImageView
                 android:layout_width="@dimen/main_buttons_size"
                 android:layout_height="@dimen/main_buttons_size"
-                android:src="@drawable/ic_settings_round"
+                android:src="@drawable/main_scr_settings_ic"
                 android:tint="@color/color3"
                 android:layout_margin="@dimen/main_buttons_margin"
                 android:elevation="8dp"
@@ -59,7 +59,7 @@
             <ImageView
                 android:layout_width="@dimen/main_buttons_size"
                 android:layout_height="@dimen/main_buttons_size"
-                android:src="@drawable/ic_info"
+                android:src="@drawable/main_scr_info_ic"
                 android:tint="@color/color4"
                 android:layout_margin="@dimen/main_buttons_margin"
                 android:elevation="8dp"

@@ -14,9 +14,9 @@
     <Button
         android:layout_width="36dp"
         android:layout_height="36dp"
-        android:background="@drawable/ic_pause_circle_fill_48dp"
+        android:background="@drawable/game_screen_pause_ic"
         android:elevation="20dp"
-        android:onClick="pauseClick"/>
+        android:onClick="onPauseClick"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

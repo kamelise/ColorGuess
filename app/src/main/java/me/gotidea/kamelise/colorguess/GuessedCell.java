@@ -19,21 +19,25 @@ public class GuessedCell extends LinearLayout {
     private final int GUESSED_NUM = 5;
     private Paint[] paintArr;
 
-    private final float PADDING_LEFT_1 = 35.7f;
-    private final float PADDING_LEFT_2 = 77.4f;
-    private final float PADDING_LEFT_3 = 56.8f;
+    private final float PADDING_LEFT_1 = 17.8f;
+    private final float PADDING_LEFT_2 = 38.7f;
+    private final float PADDING_LEFT_3 = 28.4f;
 
-    private final float PADDING_TOP_1 = 38.4f;
-    private final float PADDING_TOP_2 = 59.4f;
-    private final float PADDING_TOP_3 = 80.3f;
+    private final float PADDING_TOP_1 = 19.2f;
+    private final float PADDING_TOP_2 = 29.7f;
+    private final float PADDING_TOP_3 = 40.2f;
 
-    private final float RADIUS = 8.9f;
+    private final float RADIUS = 4.5f;
+
+    private float density;
 
     public GuessedCell(Context context, int placesGuessed, int colorsGuessed) {
         super(context);
         GRAY_COLOR = ContextCompat.getColor(context, R.color.guessedNotDot);
         GREEN_COLOR = ContextCompat.getColor(context, R.color.guessedPlacesDot);
         RED_COLOR = ContextCompat.getColor(context, R.color.guessedColorsDot);
+
+        density = getResources().getDisplayMetrics().density;
 
 //        init(new int[] {Color.GRAY, Color.GRAY, Color.GRAY, Color.RED, Color.GREEN});
         init(placesGuessed, colorsGuessed);
@@ -65,11 +69,14 @@ public class GuessedCell extends LinearLayout {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        canvas.drawCircle(PADDING_LEFT_1, PADDING_TOP_1, RADIUS, paintArr[0]);
-        canvas.drawCircle(PADDING_LEFT_2, PADDING_TOP_1, RADIUS, paintArr[1]);
-        canvas.drawCircle(PADDING_LEFT_3, PADDING_TOP_2, RADIUS, paintArr[2]);
-        canvas.drawCircle(PADDING_LEFT_1, PADDING_TOP_3, RADIUS, paintArr[3]);
-        canvas.drawCircle(PADDING_LEFT_2, PADDING_TOP_3, RADIUS, paintArr[4]);
+        drawDot(canvas, PADDING_LEFT_1, PADDING_TOP_1, RADIUS, paintArr[0]);
+        drawDot(canvas, PADDING_LEFT_2, PADDING_TOP_1, RADIUS, paintArr[1]);
+        drawDot(canvas, PADDING_LEFT_3, PADDING_TOP_2, RADIUS, paintArr[2]);
+        drawDot(canvas, PADDING_LEFT_1, PADDING_TOP_3, RADIUS, paintArr[3]);
+        drawDot(canvas, PADDING_LEFT_2, PADDING_TOP_3, RADIUS, paintArr[4]);
+    }
 
+    private void drawDot(Canvas canvas, float left, float top, float radius, Paint paint) {
+        canvas.drawCircle(left * density, top * density, radius * density, paint);
     }
 }
