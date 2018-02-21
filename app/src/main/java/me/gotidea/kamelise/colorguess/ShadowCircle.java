@@ -7,7 +7,6 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.drawable.ShapeDrawable;
 import android.view.MotionEvent;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.RelativeLayout;
@@ -30,26 +29,12 @@ public class ShadowCircle extends RelativeLayout {
     private final int fieldSize;
     private final float radius;
 
-    private ShapeDrawable mDrawable;
-
     public int getColorId() {
         return colorId;
     }
 
-    public ShadowCircle(Context context, int color, int colorIndex, float radius) {
+    public ShadowCircle(Context context, int color, int colorIndex) {
         super(context);
-
-//        int x = 0;
-//        int y = 0;
-//        int width = (int) radius * 2;
-//        int height = (int) radius * 2;
-//
-//        mDrawable = new ShapeDrawable(new OvalShape());
-//        // If the color isn't set, the shape uses black as the default.
-//        mDrawable.getPaint().setColor(color);
-//        mDrawable.getPaint().setStyle(Paint.Style.FILL);
-//        // If the bounds aren't set, the shape can't be drawn.
-//        mDrawable.setBounds(x, y, x + width, y + height);
 
         colorId = colorIndex;
         init(color);
@@ -59,6 +44,9 @@ public class ShadowCircle extends RelativeLayout {
 
         this.fieldSize = game.fieldSize;
         this.radius = getResources().getDimension(R.dimen.circle_radius);
+
+        dX = - 2*radius;
+        dY = dX;
     }
 
     private void init(int color) {
@@ -71,19 +59,14 @@ public class ShadowCircle extends RelativeLayout {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         canvas.drawCircle(radius, radius, radius, cPaint);
-//        mDrawable.draw(canvas);
     }
 
     float dX, dY;
-    float originalX, originalY;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-
-                dX = - this.getWidth()/2;
-                dY = - this.getHeight()/2;
 
                 if (gameActivity.isActiveLineContainCircle(this)) {
                     int index = gameActivity.removeCircleFromActiveLine(this);
