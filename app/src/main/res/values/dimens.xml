@@ -11,6 +11,7 @@
     <dimen name="field_cell_right_margin">-8.5dp</dimen>
     <dimen name="field_cell_transparent_left">11dp</dimen>
     <dimen name="field_cell_transparent_right">11dp</dimen>
+    <dimen name="field_cell_distance_horizontal">3.3dp</dimen>
     <dimen name="field_cell_filled_horizontal">45dp</dimen>
     <dimen name="field_cell_filled_vertical">45dp</dimen>
     <dimen name="field_cell_transparent_top">7dp</dimen>

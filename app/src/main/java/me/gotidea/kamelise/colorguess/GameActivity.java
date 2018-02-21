@@ -1,7 +1,6 @@
 package me.gotidea.kamelise.colorguess;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
@@ -21,28 +20,20 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
     public static final String TAG = "======";
 
     private Game game;
-//
-//    private final static int FIELD_CELL_LEFT_MARGIN = -17;
-//    private final static int FIELD_CELL_RIGHT_MARGIN = -17;
-//    private final static int FIELD_CELL_TRANSPARENT_LEFT = 11;
-//    private final static int FIELD_CELL_TRANSPARENT_RIGHT = 11;
-//    private final static int FIELD_CELL_FILLED_HORIZONTAL = 45;
-//    private final static int FIELD_CELL_FILLED_VERTICAL = 45;
-//    private final static int FIELD_CELL_TRANSPARENT_TOP = 7;
-//    private final static int FIELD_CELL_TRANSPARENT_BOTTOM = 14;
-//    private final static int FIELD_LINE_TOP_MARGIN = -23;
-//    private final static int FIELD_LINE_BOTTOM_MARGIN = 0;
-//    private final static int GUESSED_CELL_RIGHT_MARGIN = -3;
-//    private final static int GUESSED_CELL_WIDTH = 62;
 
     private float field_cell_left_margin;
     private float field_cell_right_margin;
     private float field_cell_transparent_left;
     private float field_cell_transparent_right;
     private float field_cell_filled_horizontal;
+
+    private float field_line_negative_margin;
+    private float field_line_start_end_margin;
+
     private float field_cell_filled_vertical;
     private float field_cell_transparent_top;
     private float field_cell_transparent_bottom;
+
     private float field_line_top_margin;
     private float field_line_bottom_margin;
     private float guessed_cell_top_margin;
@@ -60,7 +51,8 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
     private LinearLayout activeFieldLine;
     private LinearLayout activeCellView;
 
-    private float[] xStartCoordBorders;
+//    private float[] xStartCoordBorders;
+    private float[] xCenterCoordOfFieldCell;
     private float[] xFinalArr;
     private float[] yFinalArr;
 
@@ -74,16 +66,18 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        field_cell_left_margin = getResources().getDimension(R.dimen.field_cell_left_margin);
-        field_cell_right_margin = getResources().getDimension(R.dimen.field_cell_right_margin);
+//        field_cell_left_margin = getResources().getDimension(R.dimen.field_cell_left_margin);
+//        field_cell_right_margin = getResources().getDimension(R.dimen.field_cell_right_margin);
         field_cell_transparent_left = getResources().getDimension(R.dimen.field_cell_transparent_left);
         field_cell_transparent_right = getResources().getDimension(R.dimen.field_cell_transparent_right);
         field_cell_filled_horizontal = getResources().getDimension(R.dimen.field_cell_filled_horizontal);
+
+        field_line_top_margin = getResources().getDimension(R.dimen.field_line_top_margin);
+        field_line_bottom_margin = getResources().getDimension(R.dimen.field_line_bottom_margin);
         field_cell_filled_vertical = getResources().getDimension(R.dimen.field_cell_filled_vertical);
         field_cell_transparent_top = getResources().getDimension(R.dimen.field_cell_transparent_top);
         field_cell_transparent_bottom = getResources().getDimension(R.dimen.field_cell_transparent_bottom);
-        field_line_top_margin = getResources().getDimension(R.dimen.field_line_top_margin);
-        field_line_bottom_margin = getResources().getDimension(R.dimen.field_line_bottom_margin);
+
         guessed_cell_right_margin = getResources().getDimension(R.dimen.guessed_cell_right_margin);
         guessed_cell_top_margin = getResources().getDimension(R.dimen.guessed_cell_top_margin);
         guessed_cell_width = getResources().getDimension(R.dimen.guessed_cell_width);
@@ -97,17 +91,18 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
         mainField = (LinearLayout)this.findViewById(R.id.main_field);
         stackLayout = (LinearLayout)this.findViewById(R.id.stack_layout);
         guessedLayout = (LinearLayout)this.findViewById(R.id.guessed_layout);
-        guessedLayout.setBackgroundColor(Color.argb(20, 0, 0, 120));
-        mainField.setBackgroundColor(Color.argb(20, 0,120,0));
-        stackLayout.setBackgroundColor(Color.argb(20, 120,0,0));
+//        guessedLayout.setBackgroundColor(Color.argb(20, 0, 0, 120));
+//        mainField.setBackgroundColor(Color.argb(20, 0,120,0));
+//        stackLayout.setBackgroundColor(Color.argb(20, 120,0,0));
+
+        LinearLayout.LayoutParams mParams =
+                (LinearLayout.LayoutParams) mainField.getLayoutParams();
+        mParams.setMargins((int)(-field_cell_transparent_left), 0,
+                (int)(-field_cell_transparent_right), 0);
+        mainField.setLayoutParams(mParams);
 
         density = getResources().getDisplayMetrics().density;
         radius = getResources().getDimension(R.dimen.circle_radius);
-
-//        LinearLayout.LayoutParams sCParams = new LinearLayout.LayoutParams(
-//                (int)(guessed_cell_width),
-//                LinearLayout.LayoutParams.MATCH_PARENT);
-//        guessedLayout.setLayoutParams(sCParams);
 
         init();
     }
@@ -145,25 +140,73 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
                             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
 
-        //know density of the screen
-        float density = getResources().getDisplayMetrics().density;
+        //need negative margin to allow shadow to spread and not be cut
+        field_line_negative_margin = -field_cell_transparent_left;
+        //extra margin in visible part of mainField for better representation
+        field_line_start_end_margin = field_cell_transparent_left;
 
-        //initiate start bound of every cell in activeField
-        xStartCoordBorders[0] = mainField.getLeft() + field_cell_transparent_left
-                + 10 - guessed_cell_right_margin;
-//        Log.d(TAG, "mainField left = " + mainField.getLeft());
-        //calculate width of activeCell to start of next active cell
-        float d = (field_cell_filled_horizontal
-                + field_cell_transparent_left + field_cell_transparent_right)
-                + field_cell_right_margin
-                + field_cell_left_margin;
+        //calculate distance between centers of visible parts of field cells
+        float delta = (mainField.getRight() - mainField.getLeft()
+                + field_line_negative_margin*2f - field_line_start_end_margin*2f)/5;
+        //calculate whole field cell width
+        float field_cell_width = field_cell_filled_horizontal
+                + field_cell_transparent_left + field_cell_transparent_right;
+        //relative coord of cell field center point to the beginning of right border
+        //of field cell image
+        float field_cell_center = field_cell_width/2;
 
-        for (int i = 1; i < game.fieldSize; i++) {
-            xStartCoordBorders[i] = xStartCoordBorders[i - 1] + d;
+        //calculate field cell image margins
+        field_cell_left_margin = (delta - field_cell_width)/2;
+        field_cell_right_margin = field_cell_left_margin;
+
+//==========
+        //now when we know margins
+
+        int first_cell_left_margin = (int)(-field_line_negative_margin
+                + field_line_start_end_margin + field_cell_left_margin);
+        int last_cell_right_margin = (int)(-field_line_negative_margin
+                + field_line_start_end_margin + field_cell_right_margin);
+
+        for (int i = 0; i < activeFieldLine.getChildCount(); i++) {
+            LinearLayout fieldCell = (LinearLayout) activeFieldLine.getChildAt(i);
+            LinearLayout.LayoutParams fCParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            //left margin for first cell
+            fCParams.setMargins(i != 0 ? (int)(field_cell_left_margin) : first_cell_left_margin, 0,
+                    i != 4 ? (int)(field_cell_right_margin) : last_cell_right_margin, 0);
+
+            fieldCell.setLayoutParams(fCParams);
         }
 
-        //the last one is rather end of mainField
-        xStartCoordBorders[game.fieldSize] = mainField.getRight() - mainField.getPaddingRight();
+
+//            if (i == 0)
+//                fCParams.setMargins(0, 0, (int)(field_cell_right_margin), 0);
+//            else if (i == 4)
+//                fCParams.setMargins(0, (int)(field_cell_left_margin), 0, 0);
+//            else
+//                fCParams.setMargins((int)(field_cell_left_margin), 0, (int)(field_cell_right_margin), 0);
+//        fCParams.setMargins((int)(field_cell_left_margin), 0, (int)(field_cell_right_margin), 0);
+//            fCParams.setMargins(i != 0 ? (int)(field_cell_left_margin) : 0, 0,
+//                    i != 4 ? (int)(field_cell_right_margin) : 0, 0);
+
+
+
+
+//==========
+        //absolute coord of first field cell center
+        xCenterCoordOfFieldCell[0] = mainField.getLeft() + first_cell_left_margin
+                + field_cell_center;
+
+//        //initiate start bound of every cell in activeField
+//        xStartCoordBorders[0] = temp - field_cell_filled_horizontal/2;
+
+        for (int i = 1; i < game.fieldSize; i++) {
+//            xStartCoordBorders[i] = xStartCoordBorders[i - 1] + delta;
+            xCenterCoordOfFieldCell[i] = xCenterCoordOfFieldCell[i - 1] + delta;
+        }
+
+//        //the last one is rather end of mainField
+//        xStartCoordBorders[game.fieldSize] = mainField.getRight() - mainField.getPaddingRight();
 
         RelativeLayout parentView = (RelativeLayout) this.findViewById(R.id.parent);
 
@@ -175,10 +218,9 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
             yFinalArr[i] = yFinalArr[i - 1] - dy;
         }
 
-        float fieldCellCenter = (field_cell_filled_horizontal / 2);
-
         for (int i = 0; i < game.fieldSize; i++) {
-            xFinalArr[i] = xStartCoordBorders[i] + fieldCellCenter - radius;
+//            xFinalArr[i] = xStartCoordBorders[i] + field_cell_center - radius;
+            xFinalArr[i] = xCenterCoordOfFieldCell[i] - radius;
         }
     }
 
@@ -186,7 +228,8 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
         game = new Game(this, 5, 10, 10);
 
         //there are fieldSize+1 borders out there
-        xStartCoordBorders = new float[game.fieldSize + 1];
+//        xStartCoordBorders = new float[game.fieldSize + 1];
+        xCenterCoordOfFieldCell = new float[5];
         xFinalArr = new float[game.fieldSize];
         yFinalArr = new float[game.maxMooves];
 
@@ -224,15 +267,21 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
         LayoutInflater inflater = LayoutInflater.from(this);
         for (int i = 0; i < game.fieldSize; i++) {
             LinearLayout fieldCell = (LinearLayout)inflater.inflate(R.layout.field_cell, null);
-            LinearLayout.LayoutParams fCParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT);
-            if (i == 0)
-                fCParams.setMargins(0, 0, (int)(field_cell_right_margin), 0);
-            else
-                fCParams.setMargins((int)(field_cell_left_margin), 0, (int)(field_cell_right_margin), 0);
-            fieldCell.setLayoutParams(fCParams);
+
             fieldCell.setBackgroundResource(R.drawable.field_cell_normal);
             fieldCell.setId(i);
+
+            LinearLayout.LayoutParams fCParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            //left margin for first cell
+            int first_cell_left_margin = (int)(-field_line_negative_margin
+                    + field_line_start_end_margin + field_cell_left_margin);
+            int last_cell_right_margin = (int)(-field_line_negative_margin
+                    + field_line_start_end_margin + field_cell_right_margin);
+            fCParams.setMargins(i != 0 ? (int)(field_cell_left_margin) : first_cell_left_margin, 0,
+                    i != 4 ? (int)(field_cell_right_margin) : last_cell_right_margin, 0);
+
+            fieldCell.setLayoutParams(fCParams);
 
             fieldLine.addView(fieldCell);
         }
@@ -248,6 +297,7 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
                             LinearLayout.LayoutParams.WRAP_CONTENT);
             sCParams.setMargins((int)stackCellLeftMargin, (int)stackCellTopMargin,
                     (int)stackCellRightMargin, (int)stackCellBottomMargin);
+            sCParams.gravity = Gravity.CENTER_HORIZONTAL;
             stackCell.setLayoutParams(sCParams);
             stackCell.setBackgroundResource(R.drawable.stack_cell);
 
@@ -261,6 +311,7 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
         LinearLayout.LayoutParams sCParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
         sCParams.setMargins(0, (int)guessed_cell_top_margin, (int)guessed_cell_right_margin, 0);
+        sCParams.gravity = Gravity.CENTER_HORIZONTAL;
 
         guessedCell.setLayoutParams(sCParams);
         guessedCell.setBackgroundResource(R.drawable.guessed_cell);
@@ -287,12 +338,11 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
         activeCellView.setBackgroundResource(drawableRes);
     }
 
-//    public void addCircleToFieldCell(ShadowCircle shadowCircle) {;
-//        activeCellView.addView(shadowCircle);
-//    }
-
     public float xStartBorder(int i) {
-        return xStartCoordBorders[i];
+//        return xStartCoordBorders[i];
+        if (i == 5)
+            return xCenterCoordOfFieldCell[4] + field_cell_filled_horizontal/2;
+        return xCenterCoordOfFieldCell[i] - field_cell_filled_horizontal/2;
     }
 
     public float xFinal(int i) {
@@ -303,7 +353,7 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
         return yFinalArr[i];
     }
 
-    public void pauseClick(View view) {
+    public void onPauseClick(View view) {
         PopupDialogFragment pdf = new PopupDialogFragment();
 
         pdf.show(getSupportFragmentManager(), "PopupDialogFragment");
@@ -341,9 +391,6 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
 
     //"remove" touch listeners from shadowcircles in active field
     public void removeTouchListeners() {
-//        System.out.println("There are currently " + activeFieldCircles.keySet().size()
-//                + " circles in activeFieldCircles: " + activeFieldCircles.values().toString());
-
         Set<ShadowCircle> keys = activeFieldCircles.keySet();
         for (ShadowCircle key: keys) {
             key.setOnTouchListener(new View.OnTouchListener() {

@@ -72,9 +72,6 @@ public class CircleCell extends LinearLayout {
         canvas.drawCircle(CX, CY, radius, cPaint);
     }
 
-    float dX, dY;
-    float originalX, originalY;
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
@@ -83,26 +80,19 @@ public class CircleCell extends LinearLayout {
                     parentView = (RelativeLayout)this.getParent().getParent().getParent();
                 }
 
-                shadowCircle = new ShadowCircle(context, color, colorIndex, radius);
+                shadowCircle = new ShadowCircle(context, color, colorIndex);
 //                //TODO: fix this
                 shadowCircle.setBackgroundResource(R.drawable.square_transparent);
-//                shadowCircle.setBackgroundResource(R.drawable.rectangle_2_copy_48);
                 shadowCircle.setTag(10 * game.getCurrMove() + colorIndex);
 
                 float x = event.getRawX();
                 float y = event.getRawY();
-//                RelativeLayout.LayoutParams bp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                RelativeLayout.LayoutParams bp = new RelativeLayout.LayoutParams((int)radius*2,(int)radius*2);
-                originalX = x - this.getWidth()/2;
-                bp.leftMargin = (int) originalX;
-                originalY = y - this.getHeight()/2;
-                bp.topMargin = (int)originalY;
 
-                shadowCircle.setX(originalX);
-                shadowCircle.setY(originalY);
+                shadowCircle.setX(x - 2*radius);
+                shadowCircle.setY(y - 3*radius);
+                shadowCircle.setLayoutParams(new RelativeLayout.LayoutParams((int)radius*2,(int)radius*2));
 
-
-                parentView.addView(shadowCircle, bp);
+                parentView.addView(shadowCircle);
 
                 break;
         }

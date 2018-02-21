@@ -17,14 +17,7 @@
         android:background="@drawable/game_screen_pause_ic"
         android:elevation="20dp"
         android:onClick="onPauseClick"/>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:layout_gravity="center"
-        android:layout_alignParentBottom="true"
-        android:id="@+id/bottom_part">
-        <LinearLayout
+        <GridView
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="5"
@@ -49,5 +42,4 @@
             android:orientation="vertical"
             android:gravity="bottom"
             android:id="@+id/stack_layout" />
-    </LinearLayout>
 </RelativeLayout>
