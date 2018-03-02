@@ -268,7 +268,8 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
         for (int i = 0; i < game.fieldSize; i++) {
             LinearLayout fieldCell = (LinearLayout)inflater.inflate(R.layout.field_cell, null);
 
-            fieldCell.setBackgroundResource(R.drawable.field_cell_normal);
+//            fieldCell.setBackgroundResource(R.drawable.field_cell_normal);
+            fieldCell.setBackgroundResource(R.drawable.ic_field_cell_2);
             fieldCell.setId(i);
 
             LinearLayout.LayoutParams fCParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
