@@ -25,10 +25,13 @@
     <dimen name="main_buttons_size">150dp</dimen>
 
     <dimen name="main_title_text_size">50sp</dimen>
+    <dimen name="top_bar_text_size">15sp</dimen>
+    <dimen name="top_bar_time_size">20sp</dimen>
+
+    <dimen name="top_bar_menu_icon_size">18dp</dimen>
 
     <dimen name="field_cell_elevation">4dp</dimen>
+    <dimen name="top_bar_elevation">6dp</dimen>
     <dimen name="result_cell_elevation">6dp</dimen>
-
-    <dimen name="fab_margin">16dp</dimen>
 
 </resources>

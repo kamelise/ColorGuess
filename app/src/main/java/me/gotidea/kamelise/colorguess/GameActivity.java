@@ -290,7 +290,7 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
                     i != game.fieldSize - 1 ? (int) fieldCellRightMargin : (int) lastCellRightMargin,
                     (int) (overlapMarginVertical));
             fieldCell.setLayoutParams(fCParams);
-            fieldCell.setBackgroundResource(R.drawable.ic_field_cell_7);
+            fieldCell.setBackgroundResource(R.drawable.ic_field_cell);
             fieldCell.setId(i);
 
             fieldLine.addView(fieldCell);
