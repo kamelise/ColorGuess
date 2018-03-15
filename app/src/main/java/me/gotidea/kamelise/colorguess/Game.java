@@ -17,7 +17,7 @@ public class Game {
 
     public final int numBalls;
     public final int fieldSize;
-    public final int maxMooves;
+    public final int maxMoves;
 
     private int[] codedArr;
 
@@ -49,9 +49,9 @@ public class Game {
 //            Color.parseColor("#b610d2")};
 
 
-    public Game(GameActivity gameActivity, int fieldSize, int numBalls, int maxMooves) {
+    public Game(GameActivity gameActivity, int fieldSize, int numBalls, int maxMoves) {
         this.fieldSize = fieldSize;
-        this.maxMooves = maxMooves;
+        this.maxMoves = maxMoves;
         this.numBalls = numBalls;
 
         this.gameActivity = gameActivity;
@@ -108,13 +108,11 @@ public class Game {
 
     public void removeFieldCellState(int i) {
         activeArray[i] = -1;
-        System.out.println(" moved field state " + i);
         filledCellsInActiveField--;
     }
 
     public void setFieldCellState(int i, int colorId) {
         if (activeArray[i] == -1) {
-            System.out.println("added field state " + i);
             if (++filledCellsInActiveField == fieldSize)
                 filled = true;
         }
@@ -144,7 +142,6 @@ public class Game {
     }
 
     public void nextMove() {
-        ++currMove;
         int placesGuessed = 0;
         HashMap<Integer, Integer> colorsMap = new HashMap<>();
         colorsMap.putAll(this.colorsMap);
@@ -171,11 +168,12 @@ public class Game {
         }
         colorsGuessed = fieldSize - totalColorsNotGuessed - placesGuessed;
 
-        gameActivity.showGuessed(placesGuessed, colorsGuessed);
+        gameActivity.showGuessed(placesGuessed, colorsGuessed, currMove);
         gameActivity.removeTouchListeners();
 
-        if (currMove <= maxMooves && placesGuessed < 5) {
-            gameActivity.addFieldLine();
+        ++currMove;
+        if (currMove <= maxMoves && placesGuessed < 5) {
+            gameActivity.addFieldLine(0);
             initActiveArr();
         } else {
             isEnded = true;
@@ -200,7 +198,7 @@ public class Game {
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
-//        GameActivity.newGame(GameActivity, fieldSize, numBalls, maxMooves);
+//        GameActivity.newGame(GameActivity, fieldSize, numBalls, maxMoves);
 //        GameActivity.redraw();
     }
 

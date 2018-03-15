@@ -42,8 +42,8 @@ public class ShadowCircle extends RelativeLayout {
         gameActivity = (GameActivity)context;
         game = gameActivity.getGame();
 
-        this.fieldSize = game.fieldSize;
-        this.radius = getResources().getDimension(R.dimen.circle_radius);
+        fieldSize = game.fieldSize;
+        radius = getResources().getDimension(R.dimen.circle_radius);
 
         dX = - 2*radius;
         dY = dX;
@@ -70,7 +70,6 @@ public class ShadowCircle extends RelativeLayout {
 
                 if (gameActivity.isActiveLineContainCircle(this)) {
                     int index = gameActivity.removeCircleFromActiveLine(this);
-                    System.out.println("removed from position " + index + " shadowcircle: " + ShadowCircle.this);
                     game.removeFieldCellState(index);
                 }
                 break;
@@ -98,17 +97,17 @@ public class ShadowCircle extends RelativeLayout {
                     if (activeCell >= 0) {
                         if (gameActivity.getActiveCellView() != null)
 //                            gameActivity.setActiveCellViewBackground(R.drawable.field_cell_normal);
-                            gameActivity.setActiveCellViewBackground(R.drawable.ic_field_cell_2);
+                            gameActivity.setActiveCellViewBackground(R.drawable.ic_field_cell_7);
                         gameActivity.setActiveCellView(gameActivity.getActiveCellViewById(activeCell));
                     } else {
                         if (gameActivity.getActiveCellView() != null)
 //                            gameActivity.setActiveCellViewBackground(R.drawable.field_cell_normal);
-                            gameActivity.setActiveCellViewBackground(R.drawable.ic_field_cell_2);
+                            gameActivity.setActiveCellViewBackground(R.drawable.ic_field_cell_7);
                         gameActivity.setActiveCellView(null);
                     }
                     if (gameActivity.getActiveCellView() != null)
 //                        gameActivity.setActiveCellViewBackground(R.drawable.field_cell_pressed);
-                        gameActivity.setActiveCellViewBackground(R.drawable.ic_field_cell_highlighted_2);
+                        gameActivity.setActiveCellViewBackground(R.drawable.ic_field_cell_highlighted_6);
                 }
 
                 break;
@@ -121,8 +120,6 @@ public class ShadowCircle extends RelativeLayout {
                 float eventRawY = event.getRawY();
 
                 if (activeCell != -1) {
-
-                    System.out.println("added position " + activeCell + " shadowcircle: " + ShadowCircle.this);
 
                     //needed for onAnimationEnd: if another ShadowCircle is in this cell already - remove it from layout
                     final int activeCellIndexRecorded = activeCell;
@@ -138,12 +135,13 @@ public class ShadowCircle extends RelativeLayout {
                     // to remove touch listeners later when next move
                     gameActivity.addCircleToActiveLine(activeCell, ShadowCircle.this);
 
-                    float xFinal = gameActivity.xFinal(activeCell);
+                    int xFinal = Math.round(gameActivity.xFinal(activeCell));
 
                     ValueAnimator animX = ValueAnimator.ofFloat(eventRawX - radius*2,
                             xFinal);
+                    int yFinal = Math.round(gameActivity.yFinal(game.getCurrMove() - 1));
                     ValueAnimator animY = ValueAnimator.ofFloat(eventRawY - radius*2,
-                            gameActivity.yFinal(game.getCurrMove() - 1) - radius*2);
+                            yFinal);
 
                     animX.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                         @Override
@@ -191,7 +189,7 @@ public class ShadowCircle extends RelativeLayout {
 
                 if (gameActivity.getActiveCellView() != null)
 //                    gameActivity.setActiveCellViewBackground(R.drawable.field_cell_normal);
-                    gameActivity.setActiveCellViewBackground(R.drawable.ic_field_cell_2);
+                    gameActivity.setActiveCellViewBackground(R.drawable.ic_field_cell_7);
 
                 activeCell = -1;
                 break;

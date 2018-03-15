@@ -2,6 +2,8 @@
 <resources>
     <color name="colorPrimaryDark">#303F9F</color>
 
+    <color name="greyMenuColor" type="color">#77797c</color>
+
     <color name="boardColor">#F1F4F6</color>
 
     <color name="guessedNotDot" type="color">#a4abb0</color>

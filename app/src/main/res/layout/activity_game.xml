@@ -4,9 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingBottom="0dp"
-    android:paddingLeft="0dp"
-    android:paddingRight="0dp"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:background="@color/boardColor"
     android:id="@+id/parent"
@@ -27,8 +24,7 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="5"
-            android:background="#FFFFD0"
+            android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="bottom"
             android:baselineAligned="true"
@@ -36,16 +32,14 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="25"
-            android:background="#D0FFFF"
+            android:layout_weight="5"
             android:orientation="vertical"
             android:gravity="bottom"
             android:id="@+id/main_field"/>
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="5"
-            android:background="#FFD0FF"
+            android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="bottom"
             android:id="@+id/stack_layout" />
