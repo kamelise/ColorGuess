@@ -23,24 +23,25 @@
             <ImageView
                 android:layout_width="@dimen/main_buttons_size"
                 android:layout_height="@dimen/main_buttons_size"
-                android:src="@drawable/main_scr_play_ic"
-                android:tint="@color/color1"
                 android:layout_margin="@dimen/main_buttons_margin"
                 android:elevation="8dp"
-                android:clickable="true"
+                android:tint="@color/color1"
+                android:src="@drawable/main_scr_play_ic"
                 android:background="@drawable/rounded_square_shape"
+                android:clickable="true"
                 android:onClick="onClick"
                 android:id="@+id/play_game"/>
             <ImageView
                 android:layout_width="@dimen/main_buttons_size"
                 android:layout_height="@dimen/main_buttons_size"
-                android:src="@drawable/main_scr_rating_ic"
-                android:tint="@color/color2"
                 android:layout_margin="@dimen/main_buttons_margin"
                 android:elevation="8dp"
-                android:clickable="true"
+                android:tint="@color/yellow"
+                android:src="@drawable/main_scr_rating_ic"
                 android:background="@drawable/rounded_square_shape"
-                android:id="@+id/scores"/>
+                android:clickable="true"
+                android:onClick="onClick"
+                android:id="@+id/stats"/>
         </LinearLayout>
         <LinearLayout
             android:layout_width="wrap_content"
@@ -50,20 +51,24 @@
             <ImageView
                 android:layout_width="@dimen/main_buttons_size"
                 android:layout_height="@dimen/main_buttons_size"
-                android:src="@drawable/main_scr_settings_ic"
-                android:tint="@color/color3"
                 android:layout_margin="@dimen/main_buttons_margin"
                 android:elevation="8dp"
+                android:tint="@color/color3"
+                android:src="@drawable/main_scr_settings_ic"
                 android:background="@drawable/rounded_square_shape"
+                android:clickable="true"
+                android:onClick="onClick"
                 android:id="@+id/settings"/>
             <ImageView
                 android:layout_width="@dimen/main_buttons_size"
                 android:layout_height="@dimen/main_buttons_size"
-                android:src="@drawable/main_scr_info_ic"
-                android:tint="@color/color4"
                 android:layout_margin="@dimen/main_buttons_margin"
                 android:elevation="8dp"
+                android:tint="@color/color4"
+                android:src="@drawable/main_scr_info_ic"
                 android:background="@drawable/rounded_square_shape"
+                android:clickable="true"
+                android:onClick="onClick"
                 android:id="@+id/help"/>
         </LinearLayout>
     </LinearLayout>

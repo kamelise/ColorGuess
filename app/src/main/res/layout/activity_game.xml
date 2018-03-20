@@ -29,8 +29,8 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:tint="@color/grey"
             android:src="@drawable/ic_menu_game"
-            android:tint="@color/greyMenuColor"
             android:id="@+id/top_bar_menu_icon"
             android:onClick="onPauseClick"/>
         <TextView

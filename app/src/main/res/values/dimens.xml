@@ -42,4 +42,12 @@
     <dimen name="solution_cell_elevation">6dp</dimen>
     <dimen name="solution_line_margin">-12dp</dimen>
 
+    <dimen name="stats_text_size">13sp</dimen>
+    <dimen name="stats_text_padding_top">25dp</dimen>
+    <dimen name="stats_stars_padding_bottom">25dp</dimen>
+    <dimen name="stats_stars_padding_top">90dp</dimen>
+    <dimen name="stat_star_ic_size">45dp</dimen>
+    <dimen name="stats_reset_btn_text_size">16sp</dimen>
+    <dimen name="stats_reset_btn_margin_top">35dp</dimen>
+
 </resources>
