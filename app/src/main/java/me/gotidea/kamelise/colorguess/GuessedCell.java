@@ -28,6 +28,8 @@ public class GuessedCell extends LinearLayout {
 
     private final float guessedDotRadius;
 
+    private final float coefficient;
+
     public GuessedCell(Context context, int placesGuessed, int colorsGuessed, int guessedNum) {
         super(context);
 
@@ -37,9 +39,10 @@ public class GuessedCell extends LinearLayout {
         greenColor = ContextCompat.getColor(context, R.color.guessedPlacesDot);
         redColor = ContextCompat.getColor(context, R.color.guessedColorsDot);
 
-        guessedDotRadius = getResources().getDimension(R.dimen.guessed_dot_radius);
+        coefficient = ((GameActivity)context).getCoefficient();
+        guessedDotRadius = coefficient * getResources().getDimension(R.dimen.guessed_dot_radius);
 
-        float fieldCellWidth = getResources().getDimension(R.dimen.field_cell_width);
+        float fieldCellWidth = coefficient * getResources().getDimension(R.dimen.field_cell_width);
         paddingLeft1 = fieldCellWidth/4;
         paddingLeft2 = fieldCellWidth*3/4;
         paddingLeft3 = fieldCellWidth/2;

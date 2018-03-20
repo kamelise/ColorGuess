@@ -24,42 +24,25 @@ public class CircleCell extends LinearLayout {
     private final float cx;
     private final float cy;
 
-    private float density;
-
-//    private float[] xStartCoordBorders;
-//    private float[] xFinalArr;
-//    private float[] yFinal;
-
-    private int activeCell = -1;
-
-    private final int fieldSize;
     private final float radius;
+    private final float coefficient;
 
     private Game game;
-    private GameActivity gameActivity;
-
-//    private final TranslateAnimation animation;
 
     public CircleCell(Context context, int index) {
         super(context);
 
-        cx =  getResources().getDimension(R.dimen.field_cell_width) / 2;
+        this.context = context;
+        GameActivity gameActivity = (GameActivity) context;
+        coefficient = gameActivity.getCoefficient();
+        radius = coefficient * getResources().getDimension(R.dimen.circle_radius);
+        cx =  coefficient * getResources().getDimension(R.dimen.field_cell_width) / 2;
         cy = cx;
 
-        this.context = context;
-        gameActivity = (GameActivity)context;
         game = gameActivity.getGame();
-        this.colorIndex = index;
-        this.color = game.getColorByIndex(index);
-//        this.xStartCoordBorders = xCoordBorders;
-//        this.xFinalArr = xFinalArr;
-//        this.yFinal = yFinal;
-//        this.activeFieldLine = game.getActiveFieldLine();
-//        this.activeCellView = game.getActiveCellView();
+        colorIndex = index;
+        color = game.getColorByIndex(index);
 
-        this.fieldSize = game.fieldSize;
-
-        this.radius = getResources().getDimension(R.dimen.circle_radius);
         init(color);
 
     }

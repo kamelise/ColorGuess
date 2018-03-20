@@ -28,6 +28,7 @@ public class ShadowCircle extends RelativeLayout {
 
     private final int fieldSize;
     private final float radius;
+    private final float coefficient;
 
     public int getColorId() {
         return colorId;
@@ -43,7 +44,9 @@ public class ShadowCircle extends RelativeLayout {
         game = gameActivity.getGame();
 
         fieldSize = game.fieldSize;
-        radius = getResources().getDimension(R.dimen.circle_radius);
+
+        coefficient = gameActivity.getCoefficient();
+        radius = coefficient * getResources().getDimension(R.dimen.circle_radius);
 
         dX = - 2*radius;
         dY = dX;
@@ -68,10 +71,12 @@ public class ShadowCircle extends RelativeLayout {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
 
+//                Log.d(GameActivity.TAG, game.getColorByIndex(colorId) + ": ACTION_DOWN1");
                 if (gameActivity.isActiveLineContainCircle(this)) {
                     int index = gameActivity.removeCircleFromActiveLine(this);
                     game.removeFieldCellState(index);
                 }
+//                Log.d(GameActivity.TAG, game.getColorByIndex(colorId) + ": ACTION_DOWN2");
                 break;
 
             case MotionEvent.ACTION_MOVE:
@@ -97,17 +102,17 @@ public class ShadowCircle extends RelativeLayout {
                     if (activeCell >= 0) {
                         if (gameActivity.getActiveCellView() != null)
 //                            gameActivity.setActiveCellViewBackground(R.drawable.field_cell_normal);
-                            gameActivity.setActiveCellViewBackground(R.drawable.ic_field_cell);
+                            gameActivity.setActiveCellViewBackground(R.drawable.field_cell);
                         gameActivity.setActiveCellView(gameActivity.getActiveCellViewById(activeCell));
                     } else {
                         if (gameActivity.getActiveCellView() != null)
 //                            gameActivity.setActiveCellViewBackground(R.drawable.field_cell_normal);
-                            gameActivity.setActiveCellViewBackground(R.drawable.ic_field_cell);
+                            gameActivity.setActiveCellViewBackground(R.drawable.field_cell);
                         gameActivity.setActiveCellView(null);
                     }
                     if (gameActivity.getActiveCellView() != null)
 //                        gameActivity.setActiveCellViewBackground(R.drawable.field_cell_pressed);
-                        gameActivity.setActiveCellViewBackground(R.drawable.ic_field_cell_highlighted);
+                        gameActivity.setActiveCellViewBackground(R.drawable.field_cell_highlighted);
                 }
 
                 break;
@@ -189,7 +194,7 @@ public class ShadowCircle extends RelativeLayout {
 
                 if (gameActivity.getActiveCellView() != null)
 //                    gameActivity.setActiveCellViewBackground(R.drawable.field_cell_normal);
-                    gameActivity.setActiveCellViewBackground(R.drawable.ic_field_cell);
+                    gameActivity.setActiveCellViewBackground(R.drawable.field_cell);
 
                 activeCell = -1;
                 break;

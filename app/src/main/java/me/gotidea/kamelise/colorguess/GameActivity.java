@@ -1,7 +1,7 @@
 package me.gotidea.kamelise.colorguess;
 
-import android.content.Context;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -11,14 +11,20 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Chronometer;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public class GameActivity extends AppCompatActivity implements PopupDialogFragment.PopupDialogListener {
 
     public static final String TAG = "======";
+    private final String STRING_FORMAT = "%02d:%02d";
+    private final float HEIGHT_NEXUS6 = 683.4f;
+    private final float WIDTH_NEXUS6 = 411;
 
     private Game game;
 
@@ -38,11 +44,12 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
     private float overlapMarginHorizontal;
     private float extraBottomMargin;
 
-    private LinearLayout topBarLayout;
-
     private LinearLayout mainField;
     private LinearLayout guessedLayout;
     private LinearLayout stackLayout;
+//    private RelativeLayout topBarLayout;
+    private LinearLayout solutionLine;
+    private Chronometer chronometer;
 
     private LinearLayout activeFieldLine;
     private LinearLayout activeCellView;
@@ -55,8 +62,17 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
     float fieldCellElevation;
 
     private float density;
+    float coefficient;
+
+    public float getCoefficient() {
+        return coefficient;
+    }
 
     private HashMap<ShadowCircle, Integer> activeFieldCircles;
+
+    long originalBase = 0L;
+    long pausedTime = 0L;
+    long totalPauseTime = 0L;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,38 +80,49 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
 
         density = getResources().getDisplayMetrics().density;
 
-
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        Log.d(TAG, "screen width is " + metrics.widthPixels + ", height is " + metrics.heightPixels);
+        Log.d(TAG, "screen width is " + metrics.widthPixels / density + ", height is "
+                + metrics.heightPixels / density + ", density is " + density);
 
-        overlapMarginVertical = getResources().getDimension(R.dimen.overlap_margin_vertical);
-        overlapMarginHorizontal = getResources().getDimension(R.dimen.overlap_margin_horizontal);
+        //since all the dimensions are calculated for screen height = 683.4 and width = 411.4,
+        //they have to be adjusted
+        coefficient = 1.0f;
 
-        extraBottomMargin = getResources().getDimension(R.dimen.extra_bottom_margin);
+        if ((metrics.heightPixels / density < 0.95 * HEIGHT_NEXUS6)
+                || metrics.widthPixels / density < 0.95 * WIDTH_NEXUS6)
+//            coefficient = Math.min(metrics.heightPixels / density / HEIGHT_NEXUS6, metrics.widthPixels / density / WIDTH_NEXUS6);
+            coefficient = metrics.widthPixels / density / WIDTH_NEXUS6;
 
-        fieldLineTopMargin = getResources().getDimension(R.dimen.field_line_top_margin);
-        fieldLineBottomMargin = getResources().getDimension(R.dimen.field_line_bottom_margin);
+        Log.d(TAG, "coefficient is " + coefficient);
 
-        fieldCellWidth = getResources().getDimension(R.dimen.field_cell_width);
+        overlapMarginVertical = coefficient * getResources().getDimension(R.dimen.overlap_margin_vertical);
+        overlapMarginHorizontal = coefficient * getResources().getDimension(R.dimen.overlap_margin_horizontal);
+
+        extraBottomMargin = coefficient * getResources().getDimension(R.dimen.extra_bottom_margin);
+
+        fieldLineTopMargin = coefficient * getResources().getDimension(R.dimen.field_line_top_margin);
+        fieldLineBottomMargin = coefficient * getResources().getDimension(R.dimen.field_line_bottom_margin);
+
+        fieldCellWidth = coefficient * getResources().getDimension(R.dimen.field_cell_width);
         fieldCellHeight = fieldCellWidth;
+        Log.d(TAG, "field cell width is " + fieldCellWidth);
 
         fieldCellElevation = getResources().getDimension(R.dimen.field_cell_elevation);
 
         setContentView(R.layout.activity_game);
 
-//        topBarLayout = (LinearLayout)this.findViewById(R.id.top_bar);
+//        topBarLayout = (RelativeLayout) this.findViewById(R.id.top_bar);
+        solutionLine = (LinearLayout) this.findViewById(R.id.solution_line);
+        chronometer = (Chronometer) this.findViewById(R.id.chronometer);
 
-        mainField = (LinearLayout)this.findViewById(R.id.main_field);
-        stackLayout = (LinearLayout)this.findViewById(R.id.stack_layout);
-        guessedLayout = (LinearLayout)this.findViewById(R.id.guessed_layout);
-//        guessedLayout.setBackgroundColor(Color.argb(20, 0, 0, 120));
-//        mainField.setBackgroundColor(Color.argb(20, 0,120,0));
-//        stackLayout.setBackgroundColor(Color.argb(20, 120,0,0));
+        mainField = (LinearLayout) this.findViewById(R.id.main_field);
+        stackLayout = (LinearLayout) this.findViewById(R.id.stack_layout);
+        guessedLayout = (LinearLayout) this.findViewById(R.id.guessed_layout);
 
         LinearLayout.LayoutParams mParams =
                 (LinearLayout.LayoutParams) mainField.getLayoutParams();
-        mParams.setMargins(-(int)overlapMarginHorizontal, 0,0, 0);
+        mParams.setMargins(-(int) overlapMarginHorizontal, 0, 0, 0);
 //        mainField.setLayoutParams(mParams);
 
         LinearLayout.LayoutParams sParams =
@@ -105,7 +132,7 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
 
 //        Log.d(TAG, "mainField right margin is " + mParams.rightMargin + ", stackLayout left margin is " + sParams.leftMargin);
 
-        radius = getResources().getDimension(R.dimen.circle_radius);
+        radius = coefficient * getResources().getDimension(R.dimen.circle_radius);
 
         init();
     }
@@ -143,6 +170,8 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
                             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
             );
         }
+//        Log.d(TAG, "onwindowsfocuschanged triggered: " + hasFocus);
+        gameOnPause(!hasFocus);
 //        Log.d(TAG, "top bar z is " + topBarLayout.getZ());
 
 //        RelativeLayout parent = (RelativeLayout) this.findViewById(R.id.parent);
@@ -154,17 +183,17 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
 //        Log.d(TAG, "stackLayout width is " + stackLayout.getWidth() + ", right: " + stackLayout.getRight() + ", left: " + stackLayout.getLeft());
 //        Log.d(TAG, "guessedLayout width is " + guessedLayout.getWidth() + ", right: " + guessedLayout.getRight() + ", left: " + guessedLayout.getLeft());
 
-       //how much extra margin parts we want to add to first and last cells
+        //how much extra margin parts we want to add to first and last cells
         partsForExtraMargin = 5;
         //calculate space between field cells in field line
 //        Log.d(TAG, "mainField right is " + mainField.getRight() + ", mainfield left is " + mainField.getLeft());
         float fieldCellsSpace = (mainField.getRight() - mainField.getLeft()
-                - game.fieldSize * fieldCellWidth)/(game.fieldSize + partsForExtraMargin);
+                - game.fieldSize * fieldCellWidth) / (game.fieldSize + partsForExtraMargin);
         //calculate distance between centers of field cells
-        int delta = (int)fieldCellWidth + (int)fieldCellsSpace;
+        int delta = (int) fieldCellWidth + (int) fieldCellsSpace;
         //relative coord of cell field center point to the beginning of right border
         //of field cell image
-        float fieldCellCenter = fieldCellWidth /2;
+        float fieldCellCenter = fieldCellWidth / 2;
 
 //        Log.d(TAG, "field cells space is " + fieldCellsSpace + ", delta is " + delta
 //                + ", fieldCellCenter is " + fieldCellCenter);
@@ -174,7 +203,7 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
         fieldCellLeftMargin = 0;
 
         //calc first and last cell margins
-        firstCellLeftMargin = (partsForExtraMargin + 1) * fieldCellsSpace/2;
+        firstCellLeftMargin = (partsForExtraMargin + 1) * fieldCellsSpace / 2;
         lastCellRightMargin = firstCellLeftMargin;
 
 //        Log.d(TAG, "fieldCell right margin is " + fieldCellLeftMargin
@@ -183,66 +212,51 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
         for (int i = 0; i < activeFieldLine.getChildCount(); i++) {
             LinearLayout fieldCell = (LinearLayout) activeFieldLine.getChildAt(i);
             LinearLayout.LayoutParams fCParams = (LinearLayout.LayoutParams) fieldCell.getLayoutParams();
-            fCParams.setMargins(i != 0 ? (int)(fieldCellLeftMargin) : (int) firstCellLeftMargin, fCParams.topMargin,
-                    i != game.fieldSize - 1 ? (int)(fieldCellRightMargin) : (int) lastCellRightMargin, fCParams.bottomMargin);
+            fCParams.setMargins(i != 0 ? (int) (fieldCellLeftMargin) : (int) firstCellLeftMargin, fCParams.topMargin,
+                    i != game.fieldSize - 1 ? (int) (fieldCellRightMargin) : (int) lastCellRightMargin, fCParams.bottomMargin);
         }
 
         //in connection with rounding, activeFieldLine got some margins,
         // need to calc them and consider them for further calculations
-        int fLMargins = mainField.getWidth() - 4*((int)fieldCellLeftMargin + (int)fieldCellRightMargin)
-                - (int)firstCellLeftMargin - (int)lastCellRightMargin - 5*(int)fieldCellWidth;
+        int fLMargins = mainField.getWidth() - 4 * ((int) fieldCellLeftMargin + (int) fieldCellRightMargin)
+                - (int) firstCellLeftMargin - (int) lastCellRightMargin - 5 * (int) fieldCellWidth;
 
         //absolute coord of first field cell center
-        xCenterCoordOfFieldCell[0] = mainField.getLeft() + (int)(fLMargins/2) + (int)firstCellLeftMargin
-                + (int)fieldCellCenter;
-//        Log.d(TAG, "xCenterCoordOfFieldCell[0] = " + xCenterCoordOfFieldCell[0]);
+        xCenterCoordOfFieldCell[0] = mainField.getLeft() + (int) (fLMargins / 2) + (int) firstCellLeftMargin
+                + (int) fieldCellCenter;
 
         for (int i = 1; i < game.fieldSize; i++) {
             xCenterCoordOfFieldCell[i] = xCenterCoordOfFieldCell[i - 1] + delta;
-//            Log.d(TAG, "xCenterCoordOfFieldCell[" + i + "] = xCenterCoordOfFieldCell[" + (i - 1) + "] + delta: "
-//                    + xCenterCoordOfFieldCell[i]);
         }
 
         for (int i = 0; i < game.fieldSize; i++) {
-            xFinalArr[i] = Math.round(xCenterCoordOfFieldCell[i] - (int)radius);
-//            Log.d(TAG, "xFinal[" + i + "] is " + xFinalArr[i]);
+            xFinalArr[i] = Math.round(xCenterCoordOfFieldCell[i] - (int) radius);
         }
 
         int yCenterCoordBottomCell = mainField.getBottom()
-                - ((int)(fieldLineBottomMargin + extraBottomMargin - overlapMarginVertical) + (int) overlapMarginVertical)
-                - (int)(fieldCellHeight/2 + 1);
+                - ((int) (fieldLineBottomMargin + extraBottomMargin - overlapMarginVertical) + (int) overlapMarginVertical)
+                - (int) (fieldCellHeight / 2 + 1);
         yFinalArr[0] = yCenterCoordBottomCell - (int) radius;
 
-        int dy = (int)fieldCellHeight + (int)fieldLineTopMargin + (int)fieldLineBottomMargin;
-//        Log.d(TAG, "yFinal[0] is " + Math.round(yFinalArr[0]));
+        int dy = (int) fieldCellHeight + (int) fieldLineTopMargin + (int) fieldLineBottomMargin;
         for (int i = 1; i < game.maxMoves; i++) {
             yFinalArr[i] = yFinalArr[i - 1] - dy;
-//            Log.d(TAG, "yFinal[" + i + "] is " + yFinalArr[i]);
         }
-
-//        Log.d(TAG, "activeFieldLine left is " + activeFieldLine.getLeft() + ", right is " + activeFieldLine.getRight());
-//
-//        for (int i =0; i < activeFieldLine.getChildCount(); i++) {
-//            LinearLayout fieldCell = (LinearLayout) activeFieldLine.getChildAt(i);
-//
-//            Log.d(TAG, "cell" + i + " left is " + fieldCell.getLeft() + ", right is " + fieldCell.getRight()
-//                    + ", xCenterCoordOfFieldCell[" + i + "] = "
-//                    + (mainField.getLeft() + activeFieldLine.getLeft() + fieldCell.getLeft() + fieldCellCenter - radius));
-//        }
     }
 
     private void init() {
         game = new Game(this, 5, 10, 10);
 
-        //there are fieldSize+1 borders out there
-//        xStartCoordBorders = new float[game.fieldSize + 1];
         xCenterCoordOfFieldCell = new int[game.fieldSize];
         xFinalArr = new int[game.fieldSize];
         yFinalArr = new int[game.maxMoves];
 
         addFieldLine(8 * density);
-        addStackToDrag(this, stackLayout);
+        addStackToDrag();
         activeFieldCircles = new HashMap<>();
+        chronometer.start();
+        originalBase = chronometer.getBase();
+        Log.d(TAG, "original time base is " + originalBase);
     }
 
     public void redraw() {
@@ -250,13 +264,19 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
         mainField.removeAllViews();
         guessedLayout.removeAllViews();
         stackLayout.removeAllViews();
+        solutionLine.removeAllViews();
 
         ViewGroup mainLayout = (ViewGroup) mainField.getParent().getParent();
-        mainLayout.removeViews(2, mainLayout.getChildCount() - 2);
+        mainLayout.removeViews(3, mainLayout.getChildCount() - 3);
+        chronometer.stop();
+        totalPauseTime = 0;
+        chronometer.setBase(SystemClock.elapsedRealtime());
+        originalBase = chronometer.getBase();
+        pausedTime = 0;
+        Log.d(TAG, "redrawn time base is " + originalBase);
 
-
-        addFieldLine(8 * density);
-        addStackToDrag(this, stackLayout);
+        addFieldLine(extraBottomMargin);
+        addStackToDrag();
         activeFieldCircles = new HashMap<>();
     }
 
@@ -267,30 +287,24 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
 
         LinearLayout.LayoutParams fLParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
-//        Log.d(TAG, "extra_bottom_margin will be applied: " + extra_bottom_margin);
         fLParams.setMargins(0, (int) (fieldLineTopMargin - overlapMarginVertical),
                 0, (int) (fieldLineBottomMargin + extraBottomMargin - overlapMarginVertical));
         fLParams.gravity = Gravity.CENTER_HORIZONTAL;
         fieldLine.setLayoutParams(fLParams);
         fieldLine.setOrientation(LinearLayout.HORIZONTAL);
         fieldLine.setGravity(Gravity.CENTER);
-//        fieldLine.setBackgroundColor(Color.parseColor("#33ffff00"));
         mainField.addView(fieldLine, 0);
 
         for (int i = 0; i < game.fieldSize; i++) {
-            LinearLayout fieldCell = (LinearLayout)inflater.inflate(R.layout.field_cell, null);
+            LinearLayout fieldCell = (LinearLayout) inflater.inflate(R.layout.field_cell, null);
 
-            LinearLayout.LayoutParams fCParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            LinearLayout.LayoutParams fCParams = new LinearLayout.LayoutParams((int) fieldCellWidth, (int) fieldCellHeight);
 
-//            Log.d(TAG, "here i=" + i + " overlapMarginVertical=" + (int)overlapMarginVertical
-//                    + ", left is " + (i != 0 ? (int)(fieldCellLeftMargin) : (int) firstCellLeftMargin)
-//                    + ", right is " + (i != 4 ? (int)(fieldCellRightMargin) : (int) lastCellRightMargin));
             fCParams.setMargins(i != 0 ? (int) fieldCellLeftMargin : (int) firstCellLeftMargin, (int) overlapMarginVertical,
                     i != game.fieldSize - 1 ? (int) fieldCellRightMargin : (int) lastCellRightMargin,
                     (int) (overlapMarginVertical));
             fieldCell.setLayoutParams(fCParams);
-            fieldCell.setBackgroundResource(R.drawable.ic_field_cell);
+            fieldCell.setBackgroundResource(R.drawable.field_cell);
             fieldCell.setId(i);
 
             fieldLine.addView(fieldCell);
@@ -299,42 +313,71 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
         activeFieldLine = fieldLine;
     }
 
-    private void addStackToDrag(Context context, final LinearLayout stackLayout) {
+    private void addStackToDrag() {
 
         for (int i = 0; i < game.numBalls; i++) {
-
-            final CircleCell stackCell = new CircleCell(context, i);
+            final CircleCell stackCell = new CircleCell(this, i);
             LinearLayout.LayoutParams sCParams =
-                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT);
-            sCParams.setMargins(0, (int) fieldLineTopMargin,0,
-                     i == game.numBalls - 1 ? (int) (fieldLineBottomMargin + extraBottomMargin)
-                             : (int) fieldLineBottomMargin);
+                    new LinearLayout.LayoutParams((int) fieldCellWidth, (int) fieldCellHeight);
+            sCParams.setMargins(0, (int) fieldLineTopMargin, 0,
+                    i == game.numBalls - 1 ? (int) (fieldLineBottomMargin + extraBottomMargin)
+                            : (int) fieldLineBottomMargin);
             sCParams.gravity = Gravity.CENTER_HORIZONTAL;
             stackCell.setLayoutParams(sCParams);
-
-
-            stackCell.setBackgroundResource(R.drawable.stack_cell_2);
-//            stackCell.setBackgroundResource(R.drawable.stack_cell);
+            stackCell.setBackgroundResource(R.drawable.stack_cell);
             stackCell.setElevation(fieldCellElevation);
             stackLayout.addView(stackCell);
         }
     }
 
     public void showGuessed(int placesGuessed, int colorsGuessed, int moveNumber) {
-        Log.d(TAG, "moveNumber is " + moveNumber);
+//        Log.d(TAG, "moveNumber is " + moveNumber);
         GuessedCell guessedCell = new GuessedCell(this, placesGuessed, colorsGuessed, game.fieldSize);
 
-        LinearLayout.LayoutParams gCParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-        gCParams.setMargins(0, (int) fieldLineTopMargin, (int)overlapMarginHorizontal,
+        LinearLayout.LayoutParams gCParams = new LinearLayout.LayoutParams((int) fieldCellWidth, (int) fieldCellHeight);
+        gCParams.setMargins(0, (int) fieldLineTopMargin, (int) overlapMarginHorizontal,
                 moveNumber == 1 ? (int) (fieldLineBottomMargin + extraBottomMargin) : (int) fieldLineBottomMargin);
         gCParams.gravity = Gravity.RIGHT;
         guessedCell.setLayoutParams(gCParams);
 
-        guessedCell.setBackgroundResource(R.drawable.stack_cell_2);
+        guessedCell.setBackgroundResource(R.drawable.stack_cell);
         guessedCell.setElevation(fieldCellElevation);
         guessedLayout.addView(guessedCell, 0);
+    }
+
+    private void addSolutionCells() {
+        for (int i = 0; i < game.fieldSize; i++) {
+            int color = game.getCodedColor(i);
+            final SolutionCell solutionCell = new SolutionCell(this, color);
+
+            LinearLayout.LayoutParams sCParams =
+                    new LinearLayout.LayoutParams((int) fieldCellWidth, (int) fieldCellHeight);
+
+            sCParams.setMargins(i != 0 ? (int) fieldCellLeftMargin : (int) firstCellLeftMargin,
+                    (int) overlapMarginVertical,
+                    i != game.fieldSize - 1 ? (int) fieldCellRightMargin : (int) lastCellRightMargin,
+                    (int) overlapMarginVertical);
+
+            float elevation = getResources().getDimension(R.dimen.solution_cell_elevation);
+            solutionCell.setElevation(elevation);
+            solutionCell.setBackgroundResource(R.drawable.field_cell);
+            solutionLine.addView(solutionCell, sCParams);
+        }
+    }
+
+    public void gameEnded(boolean won) {//}, long time1) {
+        long time = SystemClock.elapsedRealtime() - chronometer.getBase();
+        chronometer.stop();
+        Log.d(TAG, "game time is " + time);
+        long min = TimeUnit.MILLISECONDS.toMinutes(time);
+        long sec = TimeUnit.MILLISECONDS.toSeconds(time) % 60;
+        String wonOrLost = won ? "You won!" : "You Lost!";
+        String timeWon = String.format(STRING_FORMAT, min, sec);
+        Toast.makeText(getApplicationContext(),wonOrLost + " " + timeWon,
+                Toast.LENGTH_LONG).show();
+        chronometer.setText(timeWon);
+//        Log.d(TAG, "time is " + time + ", time1 is " + time1);
+        addSolutionCells();
     }
 
     public Game getGame() {
@@ -342,7 +385,7 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
     }
 
     public LinearLayout getActiveCellViewById(int i) {
-        return (LinearLayout)activeFieldLine.getChildAt(i);
+        return (LinearLayout) activeFieldLine.getChildAt(i);
     }
 
     public LinearLayout getActiveCellView() {
@@ -358,10 +401,9 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
     }
 
     public float xStartBorder(int i) {
-//        return xStartCoordBorders[i];
         if (i == 5)
-            return xCenterCoordOfFieldCell[4] + radius;
-        return xCenterCoordOfFieldCell[i] - radius;
+            return xCenterCoordOfFieldCell[4] + 2 * radius;
+        return xCenterCoordOfFieldCell[i];
     }
 
     public float xFinal(int i) {
@@ -374,7 +416,6 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
 
     public void onPauseClick(View view) {
         PopupDialogFragment pdf = new PopupDialogFragment();
-
         pdf.show(getSupportFragmentManager(), "PopupDialogFragment");
     }
 
@@ -384,7 +425,7 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
     }
 
     @Override
-    public void onNewGameClick(DialogFragment dialog)  {
+    public void onNewGameClick(DialogFragment dialog) {
         dialog.dismiss();
         redraw();
     }
@@ -396,7 +437,31 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
 //        Toast.makeText(this, "Main screen is not yet ready", Toast.LENGTH_LONG).show();
     }
 
-    public boolean isActiveLineContainCircle (ShadowCircle shadowCircle) {
+//    @Override
+//    public void onDialogDismiss() {
+//        gameOnPause(false);
+//    }
+
+    private void gameOnPause(boolean paused) {
+        if (!game.isEnded) {
+            if (paused) {
+                pausedTime = SystemClock.elapsedRealtime();
+                chronometer.stop();
+            } else {
+                if (pausedTime != 0) {
+                    totalPauseTime += SystemClock.elapsedRealtime() - pausedTime;
+                    Log.d(TAG, "updating chronometer base after resume:");
+                    chronometer.setBase(originalBase + totalPauseTime);
+                    Log.d(TAG, "totalPausedTime is " + totalPauseTime + ", new base time is " + chronometer.getBase());
+                }
+                chronometer.start();
+                pausedTime = 0;
+            }
+//        game.gameOnPause(paused);
+        }
+    }
+
+    public boolean isActiveLineContainCircle(ShadowCircle shadowCircle) {
         return activeFieldCircles.containsKey(shadowCircle);
     }
 
@@ -409,9 +474,11 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
     }
 
     //"remove" touch listeners from shadowcircles in active field
-    public void removeTouchListeners() {
+    public boolean removeTouchListeners() {
         Set<ShadowCircle> keys = activeFieldCircles.keySet();
-        for (ShadowCircle key: keys) {
+        if (keys.size() < 5)
+            return false;
+        for (ShadowCircle key : keys) {
             key.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -420,11 +487,12 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
             });
         }
         activeFieldCircles.clear();
+        return true;
     }
 
     public ShadowCircle findShadowCircleToRemoveFromBoard(int index) {
         Set<ShadowCircle> keys = activeFieldCircles.keySet();
-        for (ShadowCircle key: keys) {
+        for (ShadowCircle key : keys) {
             int i = activeFieldCircles.get(key);
             if (i == index) {
                 activeFieldCircles.remove(key);

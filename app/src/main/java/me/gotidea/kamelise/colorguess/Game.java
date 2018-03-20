@@ -1,12 +1,9 @@
 package me.gotidea.kamelise.colorguess;
 
-import android.widget.Toast;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by kamelise on 7/2/17.
@@ -29,24 +26,15 @@ public class Game {
     private int currMove;
     private boolean filled = false;
 
-    private final long startTime;
-    private long endTime;
-//    SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("mm m ss s");
-    private final String STRING_FORMAT = "%d min, %d s";
+//    private final long startTime;
+//    private long endTime;
+//    private long pauseTime;
+//    private long resumeTime;
+    private long totalPauseTime = 0;
+
     private GameActivity gameActivity;
 
     private int[] colorArray;
-//    private final int[] colorArray = {
-//            Color.parseColor("#fa76e7"),
-//            Color.parseColor("#2196f3"),
-//            Color.parseColor("#ff8e00"),
-//            Color.parseColor("#ca785b"),
-//            Color.parseColor("#71ce53"),
-//            Color.parseColor("#f12617"),
-//            Color.parseColor("#9e9e9e"),
-//            Color.parseColor("#ffdc20"),
-//            Color.parseColor("#009688"),
-//            Color.parseColor("#b610d2")};
 
 
     public Game(GameActivity gameActivity, int fieldSize, int numBalls, int maxMoves) {
@@ -59,7 +47,8 @@ public class Game {
         colorArray = gameActivity.getResources().getIntArray(R.array.colors_array);
 
         isEnded = false;
-        startTime = System.currentTimeMillis();
+//        startTime = System.currentTimeMillis();
+//        Log.d(GameActivity.TAG, "start time is " + startTime);
 
         initCodedArr();
 
@@ -75,13 +64,8 @@ public class Game {
         codedArr = new int[fieldSize];
         colorsMap = new HashMap<>();
 
-//        StringBuilder sb1 = new StringBuilder();
-//        sb1.append("colors coded: ");
-//        StringBuilder sb2 = new StringBuilder();
-//        sb2.append("colors map: ");
         for (int i = 0; i < fieldSize; i++) {
             codedArr[i] = random.nextInt(numBalls);
-//            sb1.append(codedArr[i]).append(", ");
             int key = codedArr[i];
             if (colorsMap.containsKey(key)) {
                 colorsMap.put(key, colorsMap.get(key) + 1);
@@ -89,14 +73,6 @@ public class Game {
                 colorsMap.put(key, 1);
             }
         }
-
-        Iterator<Map.Entry<Integer, Integer>> it = colorsMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<Integer, Integer> pair = it.next();
-//            sb2.append(pair.getKey()).append(": ").append(pair.getValue()).append(", ");
-        }
-//        Log.d(GameActivity.TAG, sb1.toString());
-//        Log.d(GameActivity.TAG, sb2.toString());
     }
 
     private void initActiveArr() {
@@ -117,20 +93,10 @@ public class Game {
                 filled = true;
         }
         activeArray[i] = colorId;
-
-//        if (filled) {
-//            ++currMove;
-//            nextMove();
-//        }
     }
 
     public boolean isFieldCellStateFilled(int i) {
         return activeArray[i] != -1;
-
-//        if (filled) {
-//            ++currMove;
-//            nextMove();
-//        }
     }
 
     public boolean isFilled() {
@@ -142,69 +108,80 @@ public class Game {
     }
 
     public void nextMove() {
-        int placesGuessed = 0;
-        HashMap<Integer, Integer> colorsMap = new HashMap<>();
-        colorsMap.putAll(this.colorsMap);
-        int colorsGuessed;
+        if (gameActivity.removeTouchListeners()) {
+//            Log.d(GameActivity.TAG, "removed touch listeners, here in nextMove");
+            int placesGuessed = 0;
+            HashMap<Integer, Integer> colorsMap = new HashMap<>();
+            colorsMap.putAll(this.colorsMap);
+            int colorsGuessed;
 
-        // calculate how many colors and places guessed correctly
-        for (int i = 0; i < fieldSize; i++) {
-            if (activeArray[i] == codedArr[i]) {
-                placesGuessed++;
+            // calculate how many colors and places guessed correctly
+            for (int i = 0; i < fieldSize; i++) {
+                if (activeArray[i] == codedArr[i]) {
+                    placesGuessed++;
+                }
+                int key = activeArray[i];
+                if (colorsMap.containsKey(key) && colorsMap.get(key) > 0) {
+                    colorsMap.put(key, colorsMap.get(key) - 1);
+                }
             }
-            int key = activeArray[i];
-            if (colorsMap.containsKey(key) && colorsMap.get(key) > 0) {
-                colorsMap.put(key, colorsMap.get(key) - 1);
+
+            // total colors guessed correctly also include number of places guessed correctly
+            int totalColorsNotGuessed = 0;
+
+            Iterator<Map.Entry<Integer, Integer>> it = colorsMap.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<Integer, Integer> pair = it.next();
+                totalColorsNotGuessed += pair.getValue();
             }
-        }
+            colorsGuessed = fieldSize - totalColorsNotGuessed - placesGuessed;
 
-        // total colors guessed correctly also include number of places guessed correctly
-        int totalColorsNotGuessed = 0;
+            gameActivity.showGuessed(placesGuessed, colorsGuessed, currMove);
 
-        Iterator<Map.Entry<Integer, Integer>> it = colorsMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<Integer, Integer> pair = it.next();
-            totalColorsNotGuessed += pair.getValue();
-        }
-        colorsGuessed = fieldSize - totalColorsNotGuessed - placesGuessed;
-
-        gameActivity.showGuessed(placesGuessed, colorsGuessed, currMove);
-        gameActivity.removeTouchListeners();
-
-        ++currMove;
-        if (currMove <= maxMoves && placesGuessed < 5) {
-            gameActivity.addFieldLine(0);
-            initActiveArr();
-        } else {
-            isEnded = true;
-            endTime = System.currentTimeMillis();
-            boolean won = false;
-            if (placesGuessed == 5)
-                won = true;
-            gameEnd(won);
+            ++currMove;
+            if (currMove <= maxMoves && placesGuessed < 5) {
+                gameActivity.addFieldLine(0);
+                initActiveArr();
+            } else {
+                isEnded = true;
+//                endTime = System.currentTimeMillis();
+//                Log.d(GameActivity.TAG, "end time is " + endTime);
+                boolean won = false;
+                if (placesGuessed == 5)
+                    won = true;
+                gameEnd(won);
+            }
         }
     }
 
     private void gameEnd(boolean won) {
-        long time = endTime - startTime;
-        long min = TimeUnit.MILLISECONDS.toMinutes(time);
-        long sec = TimeUnit.MILLISECONDS.toSeconds(time) % 60;
-        String wonOrLost = won ? "You won!" : "You Lost!";
-        Toast.makeText(gameActivity.getApplicationContext(),
-                wonOrLost + " " + String.format(STRING_FORMAT, min, sec),
-                Toast.LENGTH_LONG).show();
-//        try {
-//            Thread.sleep(3000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//        GameActivity.newGame(GameActivity, fieldSize, numBalls, maxMoves);
-//        GameActivity.redraw();
+//        long time = endTime - startTime - totalPauseTime;
+//        gameActivity.gameEnded(won, time);
+        gameActivity.gameEnded(won);
     }
 
     public int getColorByIndex(int i) {
         return colorArray[i];
     }
+
+    public int getCodedColor(int position) {
+        int colorIndex = codedArr[position];
+        return colorArray[colorIndex];
+    }
+
+//    public void gameOnPause(boolean pause) {
+//        if (pause) {
+//            pauseTime = System.currentTimeMillis();
+////            Log.d(GameActivity.TAG, "onPause is true, paused at " + pauseTime);
+//        } else {
+//            resumeTime = System.currentTimeMillis();
+//            if (pauseTime != 0)
+//                totalPauseTime += (resumeTime - pauseTime);
+//            Log.d(GameActivity.TAG, "onPause is false, resumed at " + resumeTime + ", totalPauseTime is " + totalPauseTime);
+//            pauseTime = 0;
+//            resumeTime = 0;
+//        }
+//    }
 
     public boolean isEnded() {
         return isEnded;
