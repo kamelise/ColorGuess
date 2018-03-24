@@ -1,5 +1,6 @@
 package me.gotidea.kamelise.colorguess;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.app.DialogFragment;
@@ -13,13 +14,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Chronometer;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public class GameActivity extends AppCompatActivity implements PopupDialogFragment.PopupDialogListener {
+public class GameActivity extends AppCompatActivity
+        implements PauseDialogFragment.PauseDialogListener, ResultDialogFragment.ResultDialogListener {
 
     public static final String TAG = "======";
     private final String STRING_FORMAT = "%02d:%02d";
@@ -365,21 +366,6 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
         }
     }
 
-    public void gameEnded(boolean won) {//}, long time1) {
-        long time = SystemClock.elapsedRealtime() - chronometer.getBase();
-        chronometer.stop();
-        Log.d(TAG, "game time is " + time);
-        long min = TimeUnit.MILLISECONDS.toMinutes(time);
-        long sec = TimeUnit.MILLISECONDS.toSeconds(time) % 60;
-        String wonOrLost = won ? "You won!" : "You Lost!";
-        String timeWon = String.format(STRING_FORMAT, min, sec);
-        Toast.makeText(getApplicationContext(),wonOrLost + " " + timeWon,
-                Toast.LENGTH_LONG).show();
-        chronometer.setText(timeWon);
-//        Log.d(TAG, "time is " + time + ", time1 is " + time1);
-        addSolutionCells();
-    }
-
     public Game getGame() {
         return game;
     }
@@ -412,53 +398,6 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
 
     public float yFinal(int i) {
         return yFinalArr[i];
-    }
-
-    public void onPauseClick(View view) {
-        PopupDialogFragment pdf = new PopupDialogFragment();
-        pdf.show(getSupportFragmentManager(), "PopupDialogFragment");
-    }
-
-    @Override
-    public void onResumeClick(DialogFragment dialog) {
-        dialog.dismiss();
-    }
-
-    @Override
-    public void onNewGameClick(DialogFragment dialog) {
-        dialog.dismiss();
-        redraw();
-    }
-
-    @Override
-    public void onMainScreenClick(DialogFragment dialog) {
-        super.finish();
-        dialog.dismiss();
-//        Toast.makeText(this, "Main screen is not yet ready", Toast.LENGTH_LONG).show();
-    }
-
-//    @Override
-//    public void onDialogDismiss() {
-//        gameOnPause(false);
-//    }
-
-    private void gameOnPause(boolean paused) {
-        if (!game.isEnded) {
-            if (paused) {
-                pausedTime = SystemClock.elapsedRealtime();
-                chronometer.stop();
-            } else {
-                if (pausedTime != 0) {
-                    totalPauseTime += SystemClock.elapsedRealtime() - pausedTime;
-                    Log.d(TAG, "updating chronometer base after resume:");
-                    chronometer.setBase(originalBase + totalPauseTime);
-                    Log.d(TAG, "totalPausedTime is " + totalPauseTime + ", new base time is " + chronometer.getBase());
-                }
-                chronometer.start();
-                pausedTime = 0;
-            }
-//        game.gameOnPause(paused);
-        }
     }
 
     public boolean isActiveLineContainCircle(ShadowCircle shadowCircle) {
@@ -505,5 +444,85 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
     public void removeShadowCircleFromBoard(ShadowCircle shadowCircle) {
         ViewGroup mainLayout = (ViewGroup) mainField.getParent().getParent();
         mainLayout.removeView((shadowCircle));
+    }
+
+    private void gameOnPause(boolean paused) {
+        if (!game.isEnded) {
+            if (paused) {
+                pausedTime = SystemClock.elapsedRealtime();
+                chronometer.stop();
+            } else {
+                if (pausedTime != 0) {
+                    totalPauseTime += SystemClock.elapsedRealtime() - pausedTime;
+                    Log.d(TAG, "updating chronometer base after resume:");
+                    chronometer.setBase(originalBase + totalPauseTime);
+                    Log.d(TAG, "totalPausedTime is " + totalPauseTime + ", new base time is " + chronometer.getBase());
+                }
+                chronometer.start();
+                pausedTime = 0;
+            }
+//        game.gameOnPause(paused);
+        }
+    }
+
+    public void gameEnded(boolean won) {//}, long time1) {
+        long time = SystemClock.elapsedRealtime() - chronometer.getBase();
+        chronometer.stop();
+        Log.d(TAG, "game time is " + time);
+        long min = TimeUnit.MILLISECONDS.toMinutes(time);
+        long sec = TimeUnit.MILLISECONDS.toSeconds(time) % 60;
+        String wonOrLost = won ? "You won!" : "You Lost!";
+        String timeWon = String.format(STRING_FORMAT, min, sec);
+//        Toast.makeText(getApplicationContext(),wonOrLost + " " + timeWon,
+//                Toast.LENGTH_LONG).show();
+        chronometer.setText(timeWon);
+//        Log.d(TAG, "time is " + time + ", time1 is " + time1);
+        addSolutionCells();
+
+        ResultDialogFragment rdf = new ResultDialogFragment();
+        rdf.show(getSupportFragmentManager(), "ResultDialogFragment");
+    }
+
+    public void onPauseClick(View view) {
+        PauseDialogFragment pdf = new PauseDialogFragment();
+        pdf.show(getSupportFragmentManager(), "PauseDialogFragment");
+    }
+
+    @Override
+    public void onResumeClick(DialogFragment dialog) {
+        dialog.dismiss();
+        gameEnded(true);
+    }
+
+    @Override
+    public void onNewGameClick(DialogFragment dialog) {
+        dialog.dismiss();
+        redraw();
+    }
+
+    @Override
+    public void onMainScreenClick(DialogFragment dialog) {
+        super.finish();
+        dialog.dismiss();
+//        Toast.makeText(this, "Main screen is not yet ready", Toast.LENGTH_LONG).show();
+    }
+
+    //    @Override
+//    public void onDialogDismiss() {
+//        gameOnPause(false);
+//    }
+
+    @Override
+    public void onStartAgainClick(DialogFragment dialog) {
+        dialog.dismiss();
+        redraw();
+    }
+
+    @Override
+    public void onStatsClick(DialogFragment dialog) {
+        dialog.dismiss();
+        super.finish();
+        Intent intent = new Intent(this, StatisticsActivity.class);
+        startActivity(intent);
     }
 }

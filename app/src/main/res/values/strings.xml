@@ -1,11 +1,13 @@
 <resources>
     <string name="app_name">ColorGuess</string>
-    <string name="goToMainScreen">Main Screen</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="go_to_main_screen">Main Screen</string>
     <string name="retry">Retry</string>
     <string name="resume">Resume</string>
 
-    <string name="title_activity_main">MainActivity</string>
-    <string name="best_time_3">3<sup>rd</sup> Best Time:</string>
-    <string name="best_time_2">2<sup>nd</sup> Best Time:</string>
+
+    <string name="best_time_2">2<sup><small>nd</small></sup> Best Time:</string>
+    <string name="best_time_3">3<sup><small>rd</small></sup> Best Time:</string>
 
 </resources>

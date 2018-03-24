@@ -9,69 +9,60 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.LinearLayout;
+import android.widget.TextView;
 
 ;
 
 /**
  * Created by kamelise on 7/18/17.
  */
-public class PopupDialogFragment extends DialogFragment {
+public class ResultDialogFragment extends DialogFragment {
 
     /* The activity that creates an instance of this dialog fragment must
      * implement this interface in order to receive event callbacks.
      * Each method passes the DialogFragment in case the host needs to query it. */
-    public interface PopupDialogListener {
-        void onResumeClick(DialogFragment dialog);
-        void onNewGameClick(DialogFragment dialog);
-        void onMainScreenClick(DialogFragment dialog);
+    public interface ResultDialogListener {
+        void onStartAgainClick(DialogFragment dialog);
+        void onStatsClick(DialogFragment dialog);
     }
 
     // Use this instance of the interface to deliver action events
-    PopupDialogListener mListener;
+    ResultDialogListener mListener;
 
-    // Override the Fragment.onAttach() method to instantiate the PopupDialogListener
+    // Override the Fragment.onAttach() method to instantiate the PauseDialogListener
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         // Verify that the host activity implements the callback interface
         try {
-            // Instantiate the PopupDialogListener so we can send events to the host
-            mListener = (PopupDialogListener) context;
+            // Instantiate the ResultDialogListener so we can send events to the host
+            mListener = (ResultDialogListener) context;
         } catch (ClassCastException e) {
             // The activity doesn't implement the interface, throw exception
             throw new ClassCastException(context.toString()
-                    + " must implement PopupDialogListener");
+                    + " must implement ResultDialogListener");
         }
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View dialog = inflater.inflate(R.layout.pause_popup, container, false);
-        LinearLayout resumeBtn = (LinearLayout) dialog.findViewById(R.id.resume);
-        resumeBtn.setOnClickListener(new View.OnClickListener() {
+        View dialog = inflater.inflate(R.layout.popup_result, container, false);
+        TextView statsBtn = (TextView) dialog.findViewById(R.id.stats_btn);
+        statsBtn.setOnClickListener(new View.OnClickListener() {
                                          @Override
                                          public void onClick(View view) {
-//                                             Log.d(GameActivity.TAG, "clicked resume button!");
-                                             mListener.onResumeClick(PopupDialogFragment.this);
+//                                             Log.d(GameActivity.TAG, "clicked stats button!");
+                                             mListener.onStatsClick(ResultDialogFragment.this);
                                          }
                                      }
         );
-        LinearLayout newGameBtn = (LinearLayout) dialog.findViewById(R.id.new_game);
+        TextView newGameBtn = (TextView) dialog.findViewById(R.id.start_again_btn);
         newGameBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Log.d(GameActivity.TAG, "clicked newGame button!");
-                mListener.onNewGameClick(PopupDialogFragment.this);
-            }
-        });
-        LinearLayout mainScreenBtn = (LinearLayout) dialog.findViewById(R.id.main_screen);
-        mainScreenBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-//                Log.d(GameActivity.TAG, "clicked mainScreen button!");
-                mListener.onMainScreenClick(PopupDialogFragment.this);
+//                Log.d(GameActivity.TAG, "clicked start again button!");
+                mListener.onStartAgainClick(ResultDialogFragment.this);
             }
         });
         return dialog;
