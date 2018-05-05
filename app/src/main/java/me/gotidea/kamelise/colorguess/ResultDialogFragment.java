@@ -9,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 ;
@@ -19,8 +21,8 @@ import android.widget.TextView;
 public class ResultDialogFragment extends DialogFragment {
 
     /* The activity that creates an instance of this dialog fragment must
-     * implement this interface in order to receive event callbacks.
-     * Each method passes the DialogFragment in case the host needs to query it. */
+         * implement this interface in order to receive event callbacks.
+         * Each method passes the DialogFragment in case the host needs to query it. */
     public interface ResultDialogListener {
         void onStartAgainClick(DialogFragment dialog);
         void onStatsClick(DialogFragment dialog);
@@ -65,6 +67,31 @@ public class ResultDialogFragment extends DialogFragment {
                 mListener.onStartAgainClick(ResultDialogFragment.this);
             }
         });
+
+        ImageView resPicture = (ImageView) dialog.findViewById(R.id.result_picture);
+        int resId = getArguments().getInt(getString(R.string.picture_resource_id_key));
+        resPicture.setImageDrawable(getResources().getDrawable(resId));
+        resPicture.setAlpha(0.8f);
+
+        TextView titleTV = (TextView) dialog.findViewById(R.id.result_title_txt);
+        titleTV.setText(getArguments().getString(getString(R.string.result_title_txt_key)));
+
+        LinearLayout iconsLL = (LinearLayout) dialog.findViewById(R.id.result_stars_icns);
+        int starsNum = getArguments().getInt(getString(R.string.stars_num_key));
+        for (int i = 0; i < iconsLL.getChildCount(); i++) {
+            ImageView star = (ImageView) iconsLL.getChildAt(i);
+            if (starsNum >= i + 1)
+                star.setColorFilter(dialog.getResources().getColor(R.color.yellow));
+            else
+                star.setColorFilter(dialog.getResources().getColor(R.color.light_grey));
+        }
+
+        TextView timePlayedTV = (TextView) dialog.findViewById(R.id.time_played);
+        String tVText = "Time Played: " + getArguments().getString(getString(R.string.time_played_key));
+        timePlayedTV.setText(tVText);
+        TextView consequentWinsTV = (TextView) dialog.findViewById(R.id.wins_sequence);
+        String cWText = "Wins in a row: " + getArguments().getInt(getString(R.string.consequent_wins_key));
+        consequentWinsTV.setText(cWText);
         return dialog;
     }
 

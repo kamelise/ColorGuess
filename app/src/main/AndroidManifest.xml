@@ -22,7 +22,8 @@
         <activity
             android:name=".GameActivity"
             android:screenOrientation="portrait"></activity>
-        <activity android:name=".StatisticsActivity"></activity>
+        <activity android:name=".StatisticsActivity"
+            android:screenOrientation="portrait"></activity>
     </application>
 
 </manifest>

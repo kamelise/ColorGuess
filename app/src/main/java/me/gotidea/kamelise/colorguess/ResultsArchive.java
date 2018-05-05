@@ -2,20 +2,23 @@ package me.gotidea.kamelise.colorguess;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
 import java.util.Date;
 
-/**
- * Created by kamelise on 3/23/18.
- */
+@Entity(tableName = "results_archive")
+public class ResultsArchive {
 
-@Entity(tableName = "game_results", indices = {@Index(value = "date", unique = true)})
-public class GameResult {
     @PrimaryKey(autoGenerate = true)
     private int id;
+
+    @ColumnInfo(name = "date_archived")
+    private Date dateArchived;
+
+    @NonNull
+    @ColumnInfo(name = "game_id")
+    private int gameId;
 
     @NonNull
     private Date date;
@@ -34,6 +37,22 @@ public class GameResult {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public Date getDateArchived() {
+        return dateArchived;
+    }
+
+    public void setDateArchived(Date dateArchived) {
+        this.dateArchived = dateArchived;
+    }
+
+    public int getGameId() {
+        return gameId;
+    }
+
+    public void setGameId(int gameId) {
+        this.gameId = gameId;
     }
 
     public Date getDate() {
@@ -66,5 +85,14 @@ public class GameResult {
 
     public void setMovesTaken(byte movesTaken) {
         this.movesTaken = movesTaken;
+    }
+
+    public void convertGameResult(GameResult res, Date dateArchived) {
+        this.dateArchived = dateArchived;
+        gameId = res.getId();
+        date = res.getDate();
+        won = res.isWon();
+        timePlayed = res.getTimePlayed();
+        movesTaken = res.getMovesTaken();
     }
 }

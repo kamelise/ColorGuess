@@ -5,13 +5,15 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center_horizontal"
+    android:id="@+id/parentLL"
     tools:context=".StatisticsActivity">
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:paddingTop="@dimen/stats_stars_padding_top"
-        android:paddingBottom="@dimen/stats_stars_padding_bottom">
+        android:paddingBottom="@dimen/stats_stars_padding_bottom"
+        android:id="@+id/stars">
         <ImageView
             android:layout_width="@dimen/stat_star_ic_size"
             android:layout_height="@dimen/stat_star_ic_size"
@@ -85,7 +87,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingTop="@dimen/stats_text_padding_top"
-                android:text="Max Wins Sequence:"
+                android:text="Max Win Sequence:"
                 android:textAllCaps="true"
                 android:fontFamily="sans-serif"
                 android:textSize="@dimen/stats_text_size"/>
@@ -113,6 +115,19 @@
                 android:textAllCaps="true"
                 android:fontFamily="sans-serif"
                 android:textSize="@dimen/stats_text_size"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/stats_reset_btn_margin_top"
+                android:layout_marginRight="40dp"
+                android:text="Reset Stats"
+                android:textAllCaps="true"
+                android:fontFamily="sans-serif"
+                android:textSize="@dimen/stats_text_size"
+                android:textColor="@color/colorPrimary"
+                android:background="@drawable/square_transparent"
+                android:onClick="onResetClick"
+                android:id="@+id/reset_btn"/>
         </LinearLayout>
         <LinearLayout
             android:layout_width="0dp"
@@ -188,13 +203,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/stats_reset_btn_margin_top"
-                android:text="Reset Stats"
+                android:text="Play Game"
                 android:textAllCaps="true"
                 android:fontFamily="sans-serif"
                 android:textSize="@dimen/stats_text_size"
                 android:textColor="@color/colorPrimary"
                 android:background="@drawable/square_transparent"
-                android:id="@+id/reset_btn"/>
+                android:onClick="onPlayClick"
+                android:id="@+id/play_btn"/>
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

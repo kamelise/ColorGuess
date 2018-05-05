@@ -1,12 +1,13 @@
 package me.gotidea.kamelise.colorguess;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -14,16 +15,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Chronometer;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class GameActivity extends AppCompatActivity
         implements PauseDialogFragment.PauseDialogListener, ResultDialogFragment.ResultDialogListener {
 
     public static final String TAG = "======";
-    private final String STRING_FORMAT = "%02d:%02d";
+    public static final String TIME_FORMAT = "%02d:%02d";
     private final float HEIGHT_NEXUS6 = 683.4f;
     private final float WIDTH_NEXUS6 = 411;
 
@@ -48,9 +53,12 @@ public class GameActivity extends AppCompatActivity
     private LinearLayout mainField;
     private LinearLayout guessedLayout;
     private LinearLayout stackLayout;
-//    private RelativeLayout topBarLayout;
+    //    private RelativeLayout topBarLayout;
     private LinearLayout solutionLine;
     private Chronometer chronometer;
+    private TextView bestTimeTV;
+
+    SharedPreferences sharedPref;
 
     private LinearLayout activeFieldLine;
     private LinearLayout activeCellView;
@@ -75,6 +83,12 @@ public class GameActivity extends AppCompatActivity
     long pausedTime = 0L;
     long totalPauseTime = 0L;
 
+    boolean newRecord = false;
+    String newBestTime = null;
+
+    private ExecutorService executor;
+    private LocalDatabase db;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,8 +97,8 @@ public class GameActivity extends AppCompatActivity
 
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        Log.d(TAG, "screen width is " + metrics.widthPixels / density + ", height is "
-                + metrics.heightPixels / density + ", density is " + density);
+//        Log.d(TAG, "screen width is " + metrics.widthPixels / density + ", height is "
+//                + metrics.heightPixels / density + ", density is " + density);
 
         //since all the dimensions are calculated for screen height = 683.4 and width = 411.4,
         //they have to be adjusted
@@ -94,8 +108,6 @@ public class GameActivity extends AppCompatActivity
                 || metrics.widthPixels / density < 0.95 * WIDTH_NEXUS6)
 //            coefficient = Math.min(metrics.heightPixels / density / HEIGHT_NEXUS6, metrics.widthPixels / density / WIDTH_NEXUS6);
             coefficient = metrics.widthPixels / density / WIDTH_NEXUS6;
-
-        Log.d(TAG, "coefficient is " + coefficient);
 
         overlapMarginVertical = coefficient * getResources().getDimension(R.dimen.overlap_margin_vertical);
         overlapMarginHorizontal = coefficient * getResources().getDimension(R.dimen.overlap_margin_horizontal);
@@ -107,7 +119,6 @@ public class GameActivity extends AppCompatActivity
 
         fieldCellWidth = coefficient * getResources().getDimension(R.dimen.field_cell_width);
         fieldCellHeight = fieldCellWidth;
-        Log.d(TAG, "field cell width is " + fieldCellWidth);
 
         fieldCellElevation = getResources().getDimension(R.dimen.field_cell_elevation);
 
@@ -116,6 +127,7 @@ public class GameActivity extends AppCompatActivity
 //        topBarLayout = (RelativeLayout) this.findViewById(R.id.top_bar);
         solutionLine = (LinearLayout) this.findViewById(R.id.solution_line);
         chronometer = (Chronometer) this.findViewById(R.id.chronometer);
+        bestTimeTV = (TextView) this.findViewById(R.id.best_time);
 
         mainField = (LinearLayout) this.findViewById(R.id.main_field);
         stackLayout = (LinearLayout) this.findViewById(R.id.stack_layout);
@@ -129,13 +141,23 @@ public class GameActivity extends AppCompatActivity
         LinearLayout.LayoutParams sParams =
                 (LinearLayout.LayoutParams) stackLayout.getLayoutParams();
         sParams.setMargins(0, 0, 0, 0);
-//        stackLayout.setLayoutParams(sParams);
-
-//        Log.d(TAG, "mainField right margin is " + mParams.rightMargin + ", stackLayout left margin is " + sParams.leftMargin);
 
         radius = coefficient * getResources().getDimension(R.dimen.circle_radius);
 
         init();
+
+        executor = Executors.newSingleThreadExecutor();
+        db = LocalDatabase.getInstance(this);
+
+        sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        long bestTime = sharedPref.getLong(getString(R.string.best_time_key), 0L);
+        String bestTimeTxt = "--:--";
+        if (bestTime != 0L) {
+            long min = TimeUnit.MILLISECONDS.toMinutes(bestTime);
+            long sec = TimeUnit.MILLISECONDS.toSeconds(bestTime) % 60;
+            bestTimeTxt = String.format(TIME_FORMAT, min, sec);
+        }
+        bestTimeTV.setText(bestTimeTxt);
     }
 
     @Override
@@ -171,33 +193,20 @@ public class GameActivity extends AppCompatActivity
                             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
             );
         }
-//        Log.d(TAG, "onwindowsfocuschanged triggered: " + hasFocus);
         gameOnPause(!hasFocus);
-//        Log.d(TAG, "top bar z is " + topBarLayout.getZ());
-
-//        RelativeLayout parent = (RelativeLayout) this.findViewById(R.id.parent);
-//        LinearLayout bottomPart = (LinearLayout) this.findViewById(R.id.bottom_part);
-//
-//        Log.d(TAG, "parent width is " + parent.getWidth() + ", right: " + parent.getRight() + ", left: " + parent.getLeft());
-//        Log.d(TAG, "bottom part width is " + bottomPart.getWidth() + ", right: " + bottomPart.getRight() + ", left: " + bottomPart.getLeft());
-//        Log.d(TAG, "mainField width is " + mainField.getWidth() + ", right: " + mainField.getRight() + ", left: " + mainField.getLeft());
-//        Log.d(TAG, "stackLayout width is " + stackLayout.getWidth() + ", right: " + stackLayout.getRight() + ", left: " + stackLayout.getLeft());
-//        Log.d(TAG, "guessedLayout width is " + guessedLayout.getWidth() + ", right: " + guessedLayout.getRight() + ", left: " + guessedLayout.getLeft());
-
         //how much extra margin parts we want to add to first and last cells
         partsForExtraMargin = 5;
+
         //calculate space between field cells in field line
-//        Log.d(TAG, "mainField right is " + mainField.getRight() + ", mainfield left is " + mainField.getLeft());
         float fieldCellsSpace = (mainField.getRight() - mainField.getLeft()
                 - game.fieldSize * fieldCellWidth) / (game.fieldSize + partsForExtraMargin);
+
         //calculate distance between centers of field cells
         int delta = (int) fieldCellWidth + (int) fieldCellsSpace;
+
         //relative coord of cell field center point to the beginning of right border
         //of field cell image
         float fieldCellCenter = fieldCellWidth / 2;
-
-//        Log.d(TAG, "field cells space is " + fieldCellsSpace + ", delta is " + delta
-//                + ", fieldCellCenter is " + fieldCellCenter);
 
         //calc field cell image margins
         fieldCellRightMargin = fieldCellsSpace;
@@ -206,9 +215,6 @@ public class GameActivity extends AppCompatActivity
         //calc first and last cell margins
         firstCellLeftMargin = (partsForExtraMargin + 1) * fieldCellsSpace / 2;
         lastCellRightMargin = firstCellLeftMargin;
-
-//        Log.d(TAG, "fieldCell right margin is " + fieldCellLeftMargin
-//                + ", first and last cell margin is " + firstCellLeftMargin);
 
         for (int i = 0; i < activeFieldLine.getChildCount(); i++) {
             LinearLayout fieldCell = (LinearLayout) activeFieldLine.getChildAt(i);
@@ -243,6 +249,17 @@ public class GameActivity extends AppCompatActivity
         for (int i = 1; i < game.maxMoves; i++) {
             yFinalArr[i] = yFinalArr[i - 1] - dy;
         }
+
+        if (hasFocus && newRecord) {
+            newRecord = false;
+            bestTimeTV.setText(newBestTime);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        executor.shutdown();
     }
 
     private void init() {
@@ -257,7 +274,6 @@ public class GameActivity extends AppCompatActivity
         activeFieldCircles = new HashMap<>();
         chronometer.start();
         originalBase = chronometer.getBase();
-        Log.d(TAG, "original time base is " + originalBase);
     }
 
     public void redraw() {
@@ -274,7 +290,6 @@ public class GameActivity extends AppCompatActivity
         chronometer.setBase(SystemClock.elapsedRealtime());
         originalBase = chronometer.getBase();
         pausedTime = 0;
-        Log.d(TAG, "redrawn time base is " + originalBase);
 
         addFieldLine(extraBottomMargin);
         addStackToDrag();
@@ -332,7 +347,6 @@ public class GameActivity extends AppCompatActivity
     }
 
     public void showGuessed(int placesGuessed, int colorsGuessed, int moveNumber) {
-//        Log.d(TAG, "moveNumber is " + moveNumber);
         GuessedCell guessedCell = new GuessedCell(this, placesGuessed, colorsGuessed, game.fieldSize);
 
         LinearLayout.LayoutParams gCParams = new LinearLayout.LayoutParams((int) fieldCellWidth, (int) fieldCellHeight);
@@ -454,9 +468,7 @@ public class GameActivity extends AppCompatActivity
             } else {
                 if (pausedTime != 0) {
                     totalPauseTime += SystemClock.elapsedRealtime() - pausedTime;
-                    Log.d(TAG, "updating chronometer base after resume:");
                     chronometer.setBase(originalBase + totalPauseTime);
-                    Log.d(TAG, "totalPausedTime is " + totalPauseTime + ", new base time is " + chronometer.getBase());
                 }
                 chronometer.start();
                 pausedTime = 0;
@@ -468,19 +480,68 @@ public class GameActivity extends AppCompatActivity
     public void gameEnded(boolean won) {//}, long time1) {
         long time = SystemClock.elapsedRealtime() - chronometer.getBase();
         chronometer.stop();
-        Log.d(TAG, "game time is " + time);
         long min = TimeUnit.MILLISECONDS.toMinutes(time);
         long sec = TimeUnit.MILLISECONDS.toSeconds(time) % 60;
-        String wonOrLost = won ? "You won!" : "You Lost!";
-        String timeWon = String.format(STRING_FORMAT, min, sec);
-//        Toast.makeText(getApplicationContext(),wonOrLost + " " + timeWon,
+//        String wonOrLost = won ? "You won!" : "You Lost!";
+//        Toast.makeText(getApplicationContext(),wonOrLost + " " + timePlayed,
 //                Toast.LENGTH_LONG).show();
-        chronometer.setText(timeWon);
-//        Log.d(TAG, "time is " + time + ", time1 is " + time1);
+
+        final GameResult gameResult = new GameResult();
+        gameResult.setDate(new Date());
+        gameResult.setTimePlayed(time);
+        gameResult.setWon(won);
+        gameResult.setMovesTaken((byte) (game.getCurrMove() - 1));
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                db.gameResultDao().insertGameRes(gameResult);
+            }
+        });
+        String timePlayed = String.format(TIME_FORMAT, min, sec);
+        chronometer.setText(timePlayed);
         addSolutionCells();
 
+        int winsInARow = sharedPref.getInt(getString(R.string.consequent_wins_key), 0);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(getString(R.string.consequent_wins_key), won ? ++winsInARow : 0);
+        editor.apply();
+
+        int picResId = R.drawable.ic_confetti;
+        String resTitleTxt = getResources().getString(R.string.result_title_txt_won);
+        int starsNum = 0;
+
+        if (won) {
+            long bestTime = sharedPref.getLong(getString(R.string.best_time_key), 0L);
+            if ((bestTime == 0L) || (bestTime > time)) {
+
+                picResId = R.drawable.ic_trophy;
+
+                resTitleTxt = getResources().getString(R.string.result_title_txt_record);
+                editor.putLong(getString(R.string.best_time_key), time);
+                editor.apply();
+
+                newRecord = true;
+                newBestTime = timePlayed;
+            }
+            starsNum = 5 - (int) (time / 120000);
+            if (starsNum < 1) starsNum = 1;
+        } else {
+            picResId = R.drawable.ic_broken_heart;
+            resTitleTxt = getResources().getString(R.string.result_title_txt_lost);
+        }
+
+        Bundle bundle = new Bundle();
+
+        bundle.putInt(getString(R.string.picture_resource_id_key), picResId);
+        bundle.putString(getString(R.string.result_title_txt_key), resTitleTxt);
+
+        bundle.putInt(getString(R.string.stars_num_key), starsNum);
+        bundle.putString(getString(R.string.time_played_key), timePlayed);
+        bundle.putInt(getString(R.string.consequent_wins_key), winsInARow);
         ResultDialogFragment rdf = new ResultDialogFragment();
+        rdf.setArguments(bundle);
         rdf.show(getSupportFragmentManager(), "ResultDialogFragment");
+
     }
 
     public void onPauseClick(View view) {
@@ -502,15 +563,11 @@ public class GameActivity extends AppCompatActivity
 
     @Override
     public void onMainScreenClick(DialogFragment dialog) {
-        super.finish();
+//        super.finish();
         dialog.dismiss();
-//        Toast.makeText(this, "Main screen is not yet ready", Toast.LENGTH_LONG).show();
-    }
 
-    //    @Override
-//    public void onDialogDismiss() {
-//        gameOnPause(false);
-//    }
+        gameEnded(false);
+    }
 
     @Override
     public void onStartAgainClick(DialogFragment dialog) {
