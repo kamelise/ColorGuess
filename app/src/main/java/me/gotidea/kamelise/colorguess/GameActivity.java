@@ -477,14 +477,11 @@ public class GameActivity extends AppCompatActivity
         }
     }
 
-    public void gameEnded(boolean won) {//}, long time1) {
+    public void gameEnded(boolean won) {
         long time = SystemClock.elapsedRealtime() - chronometer.getBase();
         chronometer.stop();
         long min = TimeUnit.MILLISECONDS.toMinutes(time);
         long sec = TimeUnit.MILLISECONDS.toSeconds(time) % 60;
-//        String wonOrLost = won ? "You won!" : "You Lost!";
-//        Toast.makeText(getApplicationContext(),wonOrLost + " " + timePlayed,
-//                Toast.LENGTH_LONG).show();
 
         final GameResult gameResult = new GameResult();
         gameResult.setDate(new Date());
