@@ -15,7 +15,7 @@
         app:showAsAction="never" />
     <item
         android:id="@+id/action_del"
-        android:title="@string/goToMainScreen"
+        android:title="@string/go_to_main_screen"
         android:orderInCategory="140"
         app:showAsAction="never" />
 

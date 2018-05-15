@@ -21,40 +21,28 @@ public class CircleCell extends LinearLayout {
     private ShadowCircle shadowCircle;
     private RelativeLayout parentView;
 
-    private final float CX = 67.3f;
-    private final float CY = 59.3f;
+    private final float cx;
+    private final float cy;
 
-//    private float[] xStartCoordBorders;
-//    private float[] xFinalArr;
-//    private float[] yFinal;
-
-    private int activeCell = -1;
-
-    private final int fieldSize;
     private final float radius;
+    private final float coefficient;
 
     private Game game;
-    private GameActivity gameActivity;
-
-//    private final TranslateAnimation animation;
 
     public CircleCell(Context context, int index) {
         super(context);
 
         this.context = context;
-        gameActivity = (GameActivity)context;
+        GameActivity gameActivity = (GameActivity) context;
+        coefficient = gameActivity.getCoefficient();
+        radius = coefficient * getResources().getDimension(R.dimen.circle_radius);
+        cx =  coefficient * getResources().getDimension(R.dimen.field_cell_width) / 2;
+        cy = cx;
+
         game = gameActivity.getGame();
-        this.colorIndex = index;
-        this.color = game.getColorByIndex(index);
-//        this.xStartCoordBorders = xCoordBorders;
-//        this.xFinalArr = xFinalArr;
-//        this.yFinal = yFinal;
-//        this.activeFieldLine = game.getActiveFieldLine();
-//        this.activeCellView = game.getActiveCellView();
+        colorIndex = index;
+        color = game.getColorByIndex(index);
 
-        this.fieldSize = game.fieldSize;
-
-        this.radius = getResources().getDimension(R.dimen.circle_radius);
         init(color);
 
     }
@@ -69,7 +57,7 @@ public class CircleCell extends LinearLayout {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 //        Log.d("======> onDraw - ", "x: " + cx + "; y " + cy + "; radius: " + radius);
-        canvas.drawCircle(CX, CY, radius, cPaint);
+        canvas.drawCircle(cx, cy, radius, cPaint);
     }
 
     @Override
@@ -81,16 +69,22 @@ public class CircleCell extends LinearLayout {
                 }
 
                 shadowCircle = new ShadowCircle(context, color, colorIndex);
-//                //TODO: fix this
                 shadowCircle.setBackgroundResource(R.drawable.square_transparent);
                 shadowCircle.setTag(10 * game.getCurrMove() + colorIndex);
+
+                float topBarElevation = getResources().getDimension(R.dimen.top_bar_elevation);
+                int z = (int) (topBarElevation + 1);
+                shadowCircle.setZ(z);
+//                Log.d(GameActivity.TAG, "shadow circle z is " + shadowCircle.getZ());
 
                 float x = event.getRawX();
                 float y = event.getRawY();
 
                 shadowCircle.setX(x - 2*radius);
                 shadowCircle.setY(y - 3*radius);
-                shadowCircle.setLayoutParams(new RelativeLayout.LayoutParams((int)radius*2,(int)radius*2));
+                RelativeLayout.LayoutParams shParams =
+                        new RelativeLayout.LayoutParams((int)(radius*2 + 1),(int)(radius*2 + 1));
+                shadowCircle.setLayoutParams(shParams);
 
                 parentView.addView(shadowCircle);
 

@@ -50,7 +50,8 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, GameActivity.class);
                 startActivity(intent);
                 break;
-            case R.id.scores:
+            case R.id.stats:
+                startActivity(new Intent(this, StatisticsActivity.class));
                 break;
             case R.id.settings:
                 break;

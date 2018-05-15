@@ -4,19 +4,85 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingBottom="0dp"
-    android:paddingLeft="0dp"
-    android:paddingRight="0dp"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:background="@color/boardColor"
     android:id="@+id/parent"
     tools:context=".GameActivity">
-    <Button
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:background="@drawable/game_screen_pause_ic"
-        android:elevation="20dp"
-        android:onClick="onPauseClick"/>
+    <!--<Button-->
+        <!--android:layout_width="36dp"-->
+        <!--android:layout_height="36dp"-->
+        <!--android:background="@drawable/game_screen_pause_ic"-->
+        <!--android:elevation="20dp"-->
+        <!--android:onClick="onPauseClick"/>-->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/top_bar_menu_height"
+        android:layout_marginLeft="@dimen/top_bar_menu_margin_left"
+        android:layout_marginRight="@dimen/top_bar_menu_margin_right"
+        android:layout_marginTop="@dimen/top_bar_menu_margin_top"
+        android:paddingLeft="@dimen/top_bar_menu_padding_left"
+        android:paddingRight="@dimen/top_bar_menu_padding_right"
+        android:gravity="center_vertical"
+        android:elevation="@dimen/top_bar_elevation"
+        android:background="@drawable/top_bar_menu"
+        android:id="@+id/top_bar">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:tint="@color/grey"
+            android:src="@drawable/ic_menu_game"
+            android:id="@+id/top_bar_menu_icon"
+            android:onClick="onPauseClick"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="25dp"
+            android:paddingTop="4dp"
+            android:layout_toRightOf="@id/top_bar_menu_icon"
+            android:text="Time: "
+            android:textAllCaps="true"
+            android:fontFamily="sans-serif"
+            android:textSize="@dimen/top_bar_text_size"
+            android:id="@+id/text_time_elapsed"/>
+        <Chronometer
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/text_time_elapsed"
+            android:textAllCaps="true"
+            android:fontFamily="sans-serif"
+            android:textSize="@dimen/top_bar_time_size"
+            android:countDown="false"
+            android:text="02:45"
+            android:id="@+id/chronometer"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/best_time"
+            android:paddingTop="4dp"
+            android:text="Best: "
+            android:textAllCaps="true"
+            android:fontFamily="sans-serif"
+            android:textSize="@dimen/top_bar_text_size"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:textAllCaps="true"
+            android:fontFamily="sans-serif"
+            android:textSize="@dimen/top_bar_time_size"
+            android:text="01:02"
+            android:id="@+id/best_time"/>
+    </RelativeLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/top_bar"
+        android:layout_marginTop="@dimen/solution_line_margin"
+        android:gravity="center"
+        android:id="@+id/solution_line">
+    </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -27,8 +93,7 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="5"
-            android:background="#FFFFD0"
+            android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="bottom"
             android:baselineAligned="true"
@@ -36,16 +101,14 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="25"
-            android:background="#D0FFFF"
+            android:layout_weight="5"
             android:orientation="vertical"
             android:gravity="bottom"
             android:id="@+id/main_field"/>
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="5"
-            android:background="#FFD0FF"
+            android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="bottom"
             android:id="@+id/stack_layout" />

@@ -16,59 +16,48 @@ import android.widget.LinearLayout;
 /**
  * Created by kamelise on 7/18/17.
  */
-public class PopupDialogFragment extends DialogFragment {
+public class PauseDialogFragment extends DialogFragment {
 
     /* The activity that creates an instance of this dialog fragment must
      * implement this interface in order to receive event callbacks.
      * Each method passes the DialogFragment in case the host needs to query it. */
-    public interface PopupDialogListener {
+    public interface PauseDialogListener {
         void onResumeClick(DialogFragment dialog);
         void onNewGameClick(DialogFragment dialog);
         void onMainScreenClick(DialogFragment dialog);
     }
 
     // Use this instance of the interface to deliver action events
-    PopupDialogListener mListener;
+    PauseDialogListener mListener;
 
-    // Override the Fragment.onAttach() method to instantiate the PopupDialogListener
+    // Override the Fragment.onAttach() method to instantiate the PauseDialogListener
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         // Verify that the host activity implements the callback interface
         try {
-            // Instantiate the PopupDialogListener so we can send events to the host
-            mListener = (PopupDialogListener) context;
+            // Instantiate the PauseDialogListener so we can send events to the host
+            mListener = (PauseDialogListener) context;
         } catch (ClassCastException e) {
             // The activity doesn't implement the interface, throw exception
             throw new ClassCastException(context.toString()
-                    + " must implement PopupDialogListener");
+                    + " must implement PauseDialogListener");
         }
     }
-
-//    @Override
-//    public Dialog onCreateDialog(Bundle savedInstanceState) {
-//        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-//
-//        // Get the layout inflater
-//        LayoutInflater inflater = getActivity().getLayoutInflater();
-//
-//        // Inflate and set the layout for the dialog
-//        // Pass null as the parent view because its going in the dialog layout
-//        builder.setView(inflater.inflate(R.layout.pause_popup, null));
-//        Log.d(GameActivity.TAG, "created dialog ");
-//        return builder.create();
-//    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View dialog = inflater.inflate(R.layout.pause_popup, container, false);
+        //removing title - for android version < 6.0
+        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        
+        View dialog = inflater.inflate(R.layout.popup_pause, container, false);
         LinearLayout resumeBtn = (LinearLayout) dialog.findViewById(R.id.resume);
         resumeBtn.setOnClickListener(new View.OnClickListener() {
                                          @Override
                                          public void onClick(View view) {
 //                                             Log.d(GameActivity.TAG, "clicked resume button!");
-                                             mListener.onResumeClick(PopupDialogFragment.this);
+                                             mListener.onResumeClick(PauseDialogFragment.this);
                                          }
                                      }
         );
@@ -77,7 +66,7 @@ public class PopupDialogFragment extends DialogFragment {
             @Override
             public void onClick(View view) {
 //                Log.d(GameActivity.TAG, "clicked newGame button!");
-                mListener.onNewGameClick(PopupDialogFragment.this);
+                mListener.onNewGameClick(PauseDialogFragment.this);
             }
         });
         LinearLayout mainScreenBtn = (LinearLayout) dialog.findViewById(R.id.main_screen);
@@ -85,7 +74,7 @@ public class PopupDialogFragment extends DialogFragment {
             @Override
             public void onClick(View view) {
 //                Log.d(GameActivity.TAG, "clicked mainScreen button!");
-                mListener.onMainScreenClick(PopupDialogFragment.this);
+                mListener.onMainScreenClick(PauseDialogFragment.this);
             }
         });
         return dialog;

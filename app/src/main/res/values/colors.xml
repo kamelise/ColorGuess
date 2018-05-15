@@ -2,6 +2,9 @@
 <resources>
     <color name="colorPrimaryDark">#303F9F</color>
 
+    <color name="grey" type="color">#77797c</color>
+    <color name="light_grey" type="color">#dbdbdb</color>
+
     <color name="boardColor">#F1F4F6</color>
 
     <color name="guessedNotDot" type="color">#a4abb0</color>
@@ -10,30 +13,30 @@
 
     <color name="colorPrimary" type="color">#084C61</color>
 
-    <color name="color1" type="color">#1A936F</color>
-    <color name="color2" type="color">#FFBF00</color>
-    <color name="color3" type="color">#E83F6F</color>
-    <color name="color4" type="color">#0F6699</color>
-    <color name="color5">#D32F2F</color>
-    <color name="color6">#4D5057</color>
+    <color name="emerald_green" type="color">#1A936F</color>
+    <color name="yellow" type="color">#FFBF00</color>
+    <color name="cerise_pink" type="color">#E83F6F</color>
+    <color name="sea_blue" type="color">#0F6699</color>
+    <color name="persian_red">#D32F2F</color>
+    <color name="trout_gray">#4D5057</color>
 
     <color name="black_overlay">#66000000</color>
-    <color name="platinum">#673AB7</color>
+    <color name="purple_heart">#673AB7</color>
     <color name="paris_green">#FF50C878</color>
     <color name="persian_rose">#F42999</color>
     <color name="seal_brown">#4C322D</color>
     <color name="vivid_cerulean">#09AAEF</color>
 
     <array name="colors_array">
-        <item>@color/platinum</item>
+        <item>@color/purple_heart</item>
         <item>@color/vivid_cerulean</item>
-        <item>@color/color4</item>
+        <item>@color/sea_blue</item>
         <item>@color/paris_green</item>
-        <item>@color/color1</item>
-        <item>@color/color2</item>
+        <item>@color/emerald_green</item>
+        <item>@color/yellow</item>
         <item>@color/persian_rose</item>
-        <item>@color/color5</item>
-        <item>@color/color6</item>
+        <item>@color/persian_red</item>
+        <item>@color/trout_gray</item>
         <item>@color/black_overlay</item>
 
     </array>

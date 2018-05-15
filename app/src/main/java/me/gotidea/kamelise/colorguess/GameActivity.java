@@ -1,110 +1,163 @@
 package me.gotidea.kamelise.colorguess;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Chronometer;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.widget.TextView;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-public class GameActivity extends AppCompatActivity implements PopupDialogFragment.PopupDialogListener {
+public class GameActivity extends AppCompatActivity
+        implements PauseDialogFragment.PauseDialogListener, ResultDialogFragment.ResultDialogListener {
 
     public static final String TAG = "======";
+    public static final String TIME_FORMAT = "%02d:%02d";
+    private final float HEIGHT_NEXUS6 = 683.4f;
+    private final float WIDTH_NEXUS6 = 411;
 
     private Game game;
 
-    private float field_cell_left_margin;
-    private float field_cell_right_margin;
-    private float field_cell_transparent_left;
-    private float field_cell_transparent_right;
-    private float field_cell_filled_horizontal;
+    private float fieldCellLeftMargin;
+    private float fieldCellRightMargin;
+    private float firstCellLeftMargin;
+    private float lastCellRightMargin;
+    private float fieldCellWidth;
+    private float fieldCellHeight;
+    private int partsForExtraMargin;
 
-    private float field_line_negative_margin;
-    private float field_line_start_end_margin;
+    private float fieldLineTopMargin;
+    private float fieldLineBottomMargin;
 
-    private float field_cell_filled_vertical;
-    private float field_cell_transparent_top;
-    private float field_cell_transparent_bottom;
-
-    private float field_line_top_margin;
-    private float field_line_bottom_margin;
-    private float guessed_cell_top_margin;
-    private float guessed_cell_right_margin;
-    private float guessed_cell_width;
-    private float stackCellLeftMargin;
-    private float stackCellTopMargin;
-    private float stackCellRightMargin;
-    private float stackCellBottomMargin;
+    //used to not cut shadows
+    private float overlapMarginVertical;
+    private float overlapMarginHorizontal;
+    private float extraBottomMargin;
 
     private LinearLayout mainField;
     private LinearLayout guessedLayout;
     private LinearLayout stackLayout;
+    //    private RelativeLayout topBarLayout;
+    private LinearLayout solutionLine;
+    private Chronometer chronometer;
+    private TextView bestTimeTV;
+
+    SharedPreferences sharedPref;
 
     private LinearLayout activeFieldLine;
     private LinearLayout activeCellView;
 
-//    private float[] xStartCoordBorders;
-    private float[] xCenterCoordOfFieldCell;
-    private float[] xFinalArr;
-    private float[] yFinalArr;
+    private int[] xCenterCoordOfFieldCell;
+    private int[] xFinalArr;
+    private int[] yFinalArr;
 
     public float radius;
+    float fieldCellElevation;
 
     private float density;
+    float coefficient;
+
+    public float getCoefficient() {
+        return coefficient;
+    }
 
     private HashMap<ShadowCircle, Integer> activeFieldCircles;
+
+    long originalBase = 0L;
+    long pausedTime = 0L;
+    long totalPauseTime = 0L;
+
+    boolean newRecord = false;
+    String newBestTime = null;
+
+    private ExecutorService executor;
+    private LocalDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        field_cell_left_margin = getResources().getDimension(R.dimen.field_cell_left_margin);
-//        field_cell_right_margin = getResources().getDimension(R.dimen.field_cell_right_margin);
-        field_cell_transparent_left = getResources().getDimension(R.dimen.field_cell_transparent_left);
-        field_cell_transparent_right = getResources().getDimension(R.dimen.field_cell_transparent_right);
-        field_cell_filled_horizontal = getResources().getDimension(R.dimen.field_cell_filled_horizontal);
+        density = getResources().getDisplayMetrics().density;
 
-        field_line_top_margin = getResources().getDimension(R.dimen.field_line_top_margin);
-        field_line_bottom_margin = getResources().getDimension(R.dimen.field_line_bottom_margin);
-        field_cell_filled_vertical = getResources().getDimension(R.dimen.field_cell_filled_vertical);
-        field_cell_transparent_top = getResources().getDimension(R.dimen.field_cell_transparent_top);
-        field_cell_transparent_bottom = getResources().getDimension(R.dimen.field_cell_transparent_bottom);
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+//        Log.d(TAG, "screen width is " + metrics.widthPixels / density + ", height is "
+//                + metrics.heightPixels / density + ", density is " + density);
 
-        guessed_cell_right_margin = getResources().getDimension(R.dimen.guessed_cell_right_margin);
-        guessed_cell_top_margin = getResources().getDimension(R.dimen.guessed_cell_top_margin);
-        guessed_cell_width = getResources().getDimension(R.dimen.guessed_cell_width);
-        stackCellLeftMargin = getResources().getDimension(R.dimen.stack_cell_left_margin);
-        stackCellTopMargin = getResources().getDimension(R.dimen.stack_cell_top_margin);
-        stackCellRightMargin = getResources().getDimension(R.dimen.stack_cell_right_margin);
-        stackCellBottomMargin = getResources().getDimension(R.dimen.stack_cell_bottom_margin);
+        //since all the dimensions are calculated for screen height = 683.4 and width = 411.4,
+        //they have to be adjusted
+        coefficient = 1.0f;
+
+        if ((metrics.heightPixels / density < 0.95 * HEIGHT_NEXUS6)
+                || metrics.widthPixels / density < 0.95 * WIDTH_NEXUS6)
+//            coefficient = Math.min(metrics.heightPixels / density / HEIGHT_NEXUS6, metrics.widthPixels / density / WIDTH_NEXUS6);
+            coefficient = metrics.widthPixels / density / WIDTH_NEXUS6;
+
+        overlapMarginVertical = coefficient * getResources().getDimension(R.dimen.overlap_margin_vertical);
+        overlapMarginHorizontal = coefficient * getResources().getDimension(R.dimen.overlap_margin_horizontal);
+
+        extraBottomMargin = coefficient * getResources().getDimension(R.dimen.extra_bottom_margin);
+
+        fieldLineTopMargin = coefficient * getResources().getDimension(R.dimen.field_line_top_margin);
+        fieldLineBottomMargin = coefficient * getResources().getDimension(R.dimen.field_line_bottom_margin);
+
+        fieldCellWidth = coefficient * getResources().getDimension(R.dimen.field_cell_width);
+        fieldCellHeight = fieldCellWidth;
+
+        fieldCellElevation = getResources().getDimension(R.dimen.field_cell_elevation);
 
         setContentView(R.layout.activity_game);
 
-        mainField = (LinearLayout)this.findViewById(R.id.main_field);
-        stackLayout = (LinearLayout)this.findViewById(R.id.stack_layout);
-        guessedLayout = (LinearLayout)this.findViewById(R.id.guessed_layout);
-//        guessedLayout.setBackgroundColor(Color.argb(20, 0, 0, 120));
-//        mainField.setBackgroundColor(Color.argb(20, 0,120,0));
-//        stackLayout.setBackgroundColor(Color.argb(20, 120,0,0));
+//        topBarLayout = (RelativeLayout) this.findViewById(R.id.top_bar);
+        solutionLine = (LinearLayout) this.findViewById(R.id.solution_line);
+        chronometer = (Chronometer) this.findViewById(R.id.chronometer);
+        bestTimeTV = (TextView) this.findViewById(R.id.best_time);
+
+        mainField = (LinearLayout) this.findViewById(R.id.main_field);
+        stackLayout = (LinearLayout) this.findViewById(R.id.stack_layout);
+        guessedLayout = (LinearLayout) this.findViewById(R.id.guessed_layout);
 
         LinearLayout.LayoutParams mParams =
                 (LinearLayout.LayoutParams) mainField.getLayoutParams();
-        mParams.setMargins((int)(-field_cell_transparent_left), 0,
-                (int)(-field_cell_transparent_right), 0);
-        mainField.setLayoutParams(mParams);
+        mParams.setMargins(-(int) overlapMarginHorizontal, 0, 0, 0);
+//        mainField.setLayoutParams(mParams);
 
-        density = getResources().getDisplayMetrics().density;
-        radius = getResources().getDimension(R.dimen.circle_radius);
+        LinearLayout.LayoutParams sParams =
+                (LinearLayout.LayoutParams) stackLayout.getLayoutParams();
+        sParams.setMargins(0, 0, 0, 0);
+
+        radius = coefficient * getResources().getDimension(R.dimen.circle_radius);
 
         init();
+
+        executor = Executors.newSingleThreadExecutor();
+        db = LocalDatabase.getInstance(this);
+
+        sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        long bestTime = sharedPref.getLong(getString(R.string.best_time_key), 0L);
+        String bestTimeTxt = "--:--";
+        if (bestTime != 0L) {
+            long min = TimeUnit.MILLISECONDS.toMinutes(bestTime);
+            long sec = TimeUnit.MILLISECONDS.toSeconds(bestTime) % 60;
+            bestTimeTxt = String.format(TIME_FORMAT, min, sec);
+        }
+        bestTimeTV.setText(bestTimeTxt);
     }
 
     @Override
@@ -132,110 +185,95 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
         final View decorView = getWindow().getDecorView();
         if (hasFocus) {
             decorView.setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                             | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            );
         }
+        gameOnPause(!hasFocus);
+        //how much extra margin parts we want to add to first and last cells
+        partsForExtraMargin = 5;
 
-        //need negative margin to allow shadow to spread and not be cut
-        field_line_negative_margin = -field_cell_transparent_left;
-        //extra margin in visible part of mainField for better representation
-        field_line_start_end_margin = field_cell_transparent_left;
+        //calculate space between field cells in field line
+        float fieldCellsSpace = (mainField.getRight() - mainField.getLeft()
+                - game.fieldSize * fieldCellWidth) / (game.fieldSize + partsForExtraMargin);
 
-        //calculate distance between centers of visible parts of field cells
-        float delta = (mainField.getRight() - mainField.getLeft()
-                + field_line_negative_margin*2f - field_line_start_end_margin*2f)/5;
-        //calculate whole field cell width
-        float field_cell_width = field_cell_filled_horizontal
-                + field_cell_transparent_left + field_cell_transparent_right;
+        //calculate distance between centers of field cells
+        int delta = (int) fieldCellWidth + (int) fieldCellsSpace;
+
         //relative coord of cell field center point to the beginning of right border
         //of field cell image
-        float field_cell_center = field_cell_width/2;
+        float fieldCellCenter = fieldCellWidth / 2;
 
-        //calculate field cell image margins
-        field_cell_left_margin = (delta - field_cell_width)/2;
-        field_cell_right_margin = field_cell_left_margin;
+        //calc field cell image margins
+        fieldCellRightMargin = fieldCellsSpace;
+        fieldCellLeftMargin = 0;
 
-//==========
-        //now when we know margins
-
-        int first_cell_left_margin = (int)(-field_line_negative_margin
-                + field_line_start_end_margin + field_cell_left_margin);
-        int last_cell_right_margin = (int)(-field_line_negative_margin
-                + field_line_start_end_margin + field_cell_right_margin);
+        //calc first and last cell margins
+        firstCellLeftMargin = (partsForExtraMargin + 1) * fieldCellsSpace / 2;
+        lastCellRightMargin = firstCellLeftMargin;
 
         for (int i = 0; i < activeFieldLine.getChildCount(); i++) {
             LinearLayout fieldCell = (LinearLayout) activeFieldLine.getChildAt(i);
-            LinearLayout.LayoutParams fCParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT);
-            //left margin for first cell
-            fCParams.setMargins(i != 0 ? (int)(field_cell_left_margin) : first_cell_left_margin, 0,
-                    i != 4 ? (int)(field_cell_right_margin) : last_cell_right_margin, 0);
-
-            fieldCell.setLayoutParams(fCParams);
+            LinearLayout.LayoutParams fCParams = (LinearLayout.LayoutParams) fieldCell.getLayoutParams();
+            fCParams.setMargins(i != 0 ? (int) (fieldCellLeftMargin) : (int) firstCellLeftMargin, fCParams.topMargin,
+                    i != game.fieldSize - 1 ? (int) (fieldCellRightMargin) : (int) lastCellRightMargin, fCParams.bottomMargin);
         }
 
+        //in connection with rounding, activeFieldLine got some margins,
+        // need to calc them and consider them for further calculations
+        int fLMargins = mainField.getWidth() - 4 * ((int) fieldCellLeftMargin + (int) fieldCellRightMargin)
+                - (int) firstCellLeftMargin - (int) lastCellRightMargin - 5 * (int) fieldCellWidth;
 
-//            if (i == 0)
-//                fCParams.setMargins(0, 0, (int)(field_cell_right_margin), 0);
-//            else if (i == 4)
-//                fCParams.setMargins(0, (int)(field_cell_left_margin), 0, 0);
-//            else
-//                fCParams.setMargins((int)(field_cell_left_margin), 0, (int)(field_cell_right_margin), 0);
-//        fCParams.setMargins((int)(field_cell_left_margin), 0, (int)(field_cell_right_margin), 0);
-//            fCParams.setMargins(i != 0 ? (int)(field_cell_left_margin) : 0, 0,
-//                    i != 4 ? (int)(field_cell_right_margin) : 0, 0);
-
-
-
-
-//==========
         //absolute coord of first field cell center
-        xCenterCoordOfFieldCell[0] = mainField.getLeft() + first_cell_left_margin
-                + field_cell_center;
-
-//        //initiate start bound of every cell in activeField
-//        xStartCoordBorders[0] = temp - field_cell_filled_horizontal/2;
+        xCenterCoordOfFieldCell[0] = mainField.getLeft() + (int) (fLMargins / 2) + (int) firstCellLeftMargin
+                + (int) fieldCellCenter;
 
         for (int i = 1; i < game.fieldSize; i++) {
-//            xStartCoordBorders[i] = xStartCoordBorders[i - 1] + delta;
             xCenterCoordOfFieldCell[i] = xCenterCoordOfFieldCell[i - 1] + delta;
         }
 
-//        //the last one is rather end of mainField
-//        xStartCoordBorders[game.fieldSize] = mainField.getRight() - mainField.getPaddingRight();
+        for (int i = 0; i < game.fieldSize; i++) {
+            xFinalArr[i] = Math.round(xCenterCoordOfFieldCell[i] - (int) radius);
+        }
 
-        RelativeLayout parentView = (RelativeLayout) this.findViewById(R.id.parent);
+        int yCenterCoordBottomCell = mainField.getBottom()
+                - ((int) (fieldLineBottomMargin + extraBottomMargin - overlapMarginVertical) + (int) overlapMarginVertical)
+                - (int) (fieldCellHeight / 2 + 1);
+        yFinalArr[0] = yCenterCoordBottomCell - (int) radius;
 
-        yFinalArr[0] = parentView.getBottom() - radius * 2 + 25;
-        float dy = (field_cell_filled_vertical + field_cell_transparent_top
-                + field_cell_transparent_bottom)
-                + field_line_top_margin + field_line_bottom_margin;
-        for (int i = 1; i < game.maxMooves; i++) {
+        int dy = (int) fieldCellHeight + (int) fieldLineTopMargin + (int) fieldLineBottomMargin;
+        for (int i = 1; i < game.maxMoves; i++) {
             yFinalArr[i] = yFinalArr[i - 1] - dy;
         }
 
-        for (int i = 0; i < game.fieldSize; i++) {
-//            xFinalArr[i] = xStartCoordBorders[i] + field_cell_center - radius;
-            xFinalArr[i] = xCenterCoordOfFieldCell[i] - radius;
+        if (hasFocus && newRecord) {
+            newRecord = false;
+            bestTimeTV.setText(newBestTime);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        executor.shutdown();
     }
 
     private void init() {
         game = new Game(this, 5, 10, 10);
 
-        //there are fieldSize+1 borders out there
-//        xStartCoordBorders = new float[game.fieldSize + 1];
-        xCenterCoordOfFieldCell = new float[5];
-        xFinalArr = new float[game.fieldSize];
-        yFinalArr = new float[game.maxMooves];
+        xCenterCoordOfFieldCell = new int[game.fieldSize];
+        xFinalArr = new int[game.fieldSize];
+        yFinalArr = new int[game.maxMoves];
 
-        activeFieldLine = addFieldLine();
-        addStackToDrag(this, stackLayout);
+        addFieldLine(8 * density);
+        addStackToDrag();
         activeFieldCircles = new HashMap<>();
+        chronometer.start();
+        originalBase = chronometer.getBase();
     }
 
     public void redraw() {
@@ -243,79 +281,103 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
         mainField.removeAllViews();
         guessedLayout.removeAllViews();
         stackLayout.removeAllViews();
+        solutionLine.removeAllViews();
 
         ViewGroup mainLayout = (ViewGroup) mainField.getParent().getParent();
-        mainLayout.removeViews(2, mainLayout.getChildCount() - 2);
+        mainLayout.removeViews(3, mainLayout.getChildCount() - 3);
+        chronometer.stop();
+        totalPauseTime = 0;
+        chronometer.setBase(SystemClock.elapsedRealtime());
+        originalBase = chronometer.getBase();
+        pausedTime = 0;
 
-
-        activeFieldLine = addFieldLine();
-        addStackToDrag(this, stackLayout);
+        addFieldLine(extraBottomMargin);
+        addStackToDrag();
         activeFieldCircles = new HashMap<>();
     }
 
     //should be run before filling out "stack to drag"
-    public LinearLayout addFieldLine() {
+    public void addFieldLine(float extraBottomMargin) {
+        LayoutInflater inflater = LayoutInflater.from(this);
         LinearLayout fieldLine = new LinearLayout(this);
+
         LinearLayout.LayoutParams fLParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
-        fLParams.setMargins(0, (int) field_line_top_margin, 0, (int) field_line_bottom_margin);
+        fLParams.setMargins(0, (int) (fieldLineTopMargin - overlapMarginVertical),
+                0, (int) (fieldLineBottomMargin + extraBottomMargin - overlapMarginVertical));
+        fLParams.gravity = Gravity.CENTER_HORIZONTAL;
         fieldLine.setLayoutParams(fLParams);
         fieldLine.setOrientation(LinearLayout.HORIZONTAL);
         fieldLine.setGravity(Gravity.CENTER);
-        mainField.addView(fieldLine);
+        mainField.addView(fieldLine, 0);
 
-        LayoutInflater inflater = LayoutInflater.from(this);
         for (int i = 0; i < game.fieldSize; i++) {
-            LinearLayout fieldCell = (LinearLayout)inflater.inflate(R.layout.field_cell, null);
+            LinearLayout fieldCell = (LinearLayout) inflater.inflate(R.layout.field_cell, null);
 
-            fieldCell.setBackgroundResource(R.drawable.field_cell_normal);
-            fieldCell.setId(i);
+            LinearLayout.LayoutParams fCParams = new LinearLayout.LayoutParams((int) fieldCellWidth, (int) fieldCellHeight);
 
-            LinearLayout.LayoutParams fCParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT);
-            //left margin for first cell
-            int first_cell_left_margin = (int)(-field_line_negative_margin
-                    + field_line_start_end_margin + field_cell_left_margin);
-            int last_cell_right_margin = (int)(-field_line_negative_margin
-                    + field_line_start_end_margin + field_cell_right_margin);
-            fCParams.setMargins(i != 0 ? (int)(field_cell_left_margin) : first_cell_left_margin, 0,
-                    i != 4 ? (int)(field_cell_right_margin) : last_cell_right_margin, 0);
-
+            fCParams.setMargins(i != 0 ? (int) fieldCellLeftMargin : (int) firstCellLeftMargin, (int) overlapMarginVertical,
+                    i != game.fieldSize - 1 ? (int) fieldCellRightMargin : (int) lastCellRightMargin,
+                    (int) (overlapMarginVertical));
             fieldCell.setLayoutParams(fCParams);
+            fieldCell.setBackgroundResource(R.drawable.field_cell);
+            fieldCell.setId(i);
 
             fieldLine.addView(fieldCell);
         }
-        return fieldLine;
+
+        activeFieldLine = fieldLine;
     }
 
-    private void addStackToDrag(Context context, final LinearLayout stackLayout) {
-        for (int i = 0; i < game.numBalls; i++) {
+    private void addStackToDrag() {
 
-            final CircleCell stackCell = new CircleCell(context, i);
+        for (int i = 0; i < game.numBalls; i++) {
+            final CircleCell stackCell = new CircleCell(this, i);
             LinearLayout.LayoutParams sCParams =
-                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT);
-            sCParams.setMargins((int)stackCellLeftMargin, (int)stackCellTopMargin,
-                    (int)stackCellRightMargin, (int)stackCellBottomMargin);
+                    new LinearLayout.LayoutParams((int) fieldCellWidth, (int) fieldCellHeight);
+            sCParams.setMargins(0, (int) fieldLineTopMargin, 0,
+                    i == game.numBalls - 1 ? (int) (fieldLineBottomMargin + extraBottomMargin)
+                            : (int) fieldLineBottomMargin);
             sCParams.gravity = Gravity.CENTER_HORIZONTAL;
             stackCell.setLayoutParams(sCParams);
             stackCell.setBackgroundResource(R.drawable.stack_cell);
-
+            stackCell.setElevation(fieldCellElevation);
             stackLayout.addView(stackCell);
         }
     }
 
-    public void showGuessed(int placesGuessed, int colorsGuessed) {
-        GuessedCell guessedCell = new GuessedCell(this, placesGuessed, colorsGuessed);
+    public void showGuessed(int placesGuessed, int colorsGuessed, int moveNumber) {
+        GuessedCell guessedCell = new GuessedCell(this, placesGuessed, colorsGuessed, game.fieldSize);
 
-        LinearLayout.LayoutParams sCParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-        sCParams.setMargins(0, (int)guessed_cell_top_margin, (int)guessed_cell_right_margin, 0);
-        sCParams.gravity = Gravity.CENTER_HORIZONTAL;
+        LinearLayout.LayoutParams gCParams = new LinearLayout.LayoutParams((int) fieldCellWidth, (int) fieldCellHeight);
+        gCParams.setMargins(0, (int) fieldLineTopMargin, (int) overlapMarginHorizontal,
+                moveNumber == 1 ? (int) (fieldLineBottomMargin + extraBottomMargin) : (int) fieldLineBottomMargin);
+        gCParams.gravity = Gravity.RIGHT;
+        guessedCell.setLayoutParams(gCParams);
 
-        guessedCell.setLayoutParams(sCParams);
-        guessedCell.setBackgroundResource(R.drawable.guessed_cell);
+        guessedCell.setBackgroundResource(R.drawable.stack_cell);
+        guessedCell.setElevation(fieldCellElevation);
         guessedLayout.addView(guessedCell, 0);
+    }
+
+    private void addSolutionCells() {
+        for (int i = 0; i < game.fieldSize; i++) {
+            int color = game.getCodedColor(i);
+            final SolutionCell solutionCell = new SolutionCell(this, color);
+
+            LinearLayout.LayoutParams sCParams =
+                    new LinearLayout.LayoutParams((int) fieldCellWidth, (int) fieldCellHeight);
+
+            sCParams.setMargins(i != 0 ? (int) fieldCellLeftMargin : (int) firstCellLeftMargin,
+                    (int) overlapMarginVertical,
+                    i != game.fieldSize - 1 ? (int) fieldCellRightMargin : (int) lastCellRightMargin,
+                    (int) overlapMarginVertical);
+
+            float elevation = getResources().getDimension(R.dimen.solution_cell_elevation);
+            solutionCell.setElevation(elevation);
+            solutionCell.setBackgroundResource(R.drawable.field_cell);
+            solutionLine.addView(solutionCell, sCParams);
+        }
     }
 
     public Game getGame() {
@@ -323,7 +385,7 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
     }
 
     public LinearLayout getActiveCellViewById(int i) {
-        return (LinearLayout)activeFieldLine.getChildAt(i);
+        return (LinearLayout) activeFieldLine.getChildAt(i);
     }
 
     public LinearLayout getActiveCellView() {
@@ -339,10 +401,9 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
     }
 
     public float xStartBorder(int i) {
-//        return xStartCoordBorders[i];
         if (i == 5)
-            return xCenterCoordOfFieldCell[4] + field_cell_filled_horizontal/2;
-        return xCenterCoordOfFieldCell[i] - field_cell_filled_horizontal/2;
+            return xCenterCoordOfFieldCell[4] + 2 * radius;
+        return xCenterCoordOfFieldCell[i];
     }
 
     public float xFinal(int i) {
@@ -353,31 +414,7 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
         return yFinalArr[i];
     }
 
-    public void onPauseClick(View view) {
-        PopupDialogFragment pdf = new PopupDialogFragment();
-
-        pdf.show(getSupportFragmentManager(), "PopupDialogFragment");
-    }
-
-    @Override
-    public void onResumeClick(DialogFragment dialog) {
-        dialog.dismiss();
-    }
-
-    @Override
-    public void onNewGameClick(DialogFragment dialog)  {
-        dialog.dismiss();
-        redraw();
-    }
-
-    @Override
-    public void onMainScreenClick(DialogFragment dialog) {
-        super.finish();
-        dialog.dismiss();
-//        Toast.makeText(this, "Main screen is not yet ready", Toast.LENGTH_LONG).show();
-    }
-
-    public boolean isActiveLineContainCircle (ShadowCircle shadowCircle) {
+    public boolean isActiveLineContainCircle(ShadowCircle shadowCircle) {
         return activeFieldCircles.containsKey(shadowCircle);
     }
 
@@ -390,9 +427,11 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
     }
 
     //"remove" touch listeners from shadowcircles in active field
-    public void removeTouchListeners() {
+    public boolean removeTouchListeners() {
         Set<ShadowCircle> keys = activeFieldCircles.keySet();
-        for (ShadowCircle key: keys) {
+        if (keys.size() < 5)
+            return false;
+        for (ShadowCircle key : keys) {
             key.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -401,14 +440,14 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
             });
         }
         activeFieldCircles.clear();
+        return true;
     }
 
     public ShadowCircle findShadowCircleToRemoveFromBoard(int index) {
         Set<ShadowCircle> keys = activeFieldCircles.keySet();
-        for (ShadowCircle key: keys) {
+        for (ShadowCircle key : keys) {
             int i = activeFieldCircles.get(key);
             if (i == index) {
-                System.out.println("removing shadowcircle " + key + " from game activity");
                 activeFieldCircles.remove(key);
                 return key;
             }
@@ -419,5 +458,125 @@ public class GameActivity extends AppCompatActivity implements PopupDialogFragme
     public void removeShadowCircleFromBoard(ShadowCircle shadowCircle) {
         ViewGroup mainLayout = (ViewGroup) mainField.getParent().getParent();
         mainLayout.removeView((shadowCircle));
+    }
+
+    private void gameOnPause(boolean paused) {
+        if (!game.isEnded) {
+            if (paused) {
+                pausedTime = SystemClock.elapsedRealtime();
+                chronometer.stop();
+            } else {
+                if (pausedTime != 0) {
+                    totalPauseTime += SystemClock.elapsedRealtime() - pausedTime;
+                    chronometer.setBase(originalBase + totalPauseTime);
+                }
+                chronometer.start();
+                pausedTime = 0;
+            }
+//        game.gameOnPause(paused);
+        }
+    }
+
+    public void gameEnded(boolean won) {
+        long time = SystemClock.elapsedRealtime() - chronometer.getBase();
+        chronometer.stop();
+        long min = TimeUnit.MILLISECONDS.toMinutes(time);
+        long sec = TimeUnit.MILLISECONDS.toSeconds(time) % 60;
+
+        final GameResult gameResult = new GameResult();
+        gameResult.setDate(new Date());
+        gameResult.setTimePlayed(time);
+        gameResult.setWon(won);
+        gameResult.setMovesTaken((byte) (game.getCurrMove() - 1));
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                db.gameResultDao().insertGameRes(gameResult);
+            }
+        });
+        String timePlayed = String.format(TIME_FORMAT, min, sec);
+        chronometer.setText(timePlayed);
+        addSolutionCells();
+
+        int winsInARow = sharedPref.getInt(getString(R.string.consequent_wins_key), 0);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(getString(R.string.consequent_wins_key), won ? ++winsInARow : 0);
+        editor.apply();
+
+        int picResId = R.drawable.ic_confetti;
+        String resTitleTxt = getResources().getString(R.string.result_title_txt_won);
+        int starsNum = 0;
+
+        if (won) {
+            long bestTime = sharedPref.getLong(getString(R.string.best_time_key), 0L);
+            if ((bestTime == 0L) || (bestTime > time)) {
+
+                picResId = R.drawable.ic_trophy;
+
+                resTitleTxt = getResources().getString(R.string.result_title_txt_record);
+                editor.putLong(getString(R.string.best_time_key), time);
+                editor.apply();
+
+                newRecord = true;
+                newBestTime = timePlayed;
+            }
+            starsNum = 5 - (int) (time / 120000);
+            if (starsNum < 1) starsNum = 1;
+        } else {
+            picResId = R.drawable.ic_broken_heart;
+            resTitleTxt = getResources().getString(R.string.result_title_txt_lost);
+        }
+
+        Bundle bundle = new Bundle();
+
+        bundle.putInt(getString(R.string.picture_resource_id_key), picResId);
+        bundle.putString(getString(R.string.result_title_txt_key), resTitleTxt);
+
+        bundle.putInt(getString(R.string.stars_num_key), starsNum);
+        bundle.putString(getString(R.string.time_played_key), timePlayed);
+        bundle.putInt(getString(R.string.consequent_wins_key), winsInARow);
+        ResultDialogFragment rdf = new ResultDialogFragment();
+        rdf.setArguments(bundle);
+        rdf.show(getSupportFragmentManager(), "ResultDialogFragment");
+
+    }
+
+    public void onPauseClick(View view) {
+        PauseDialogFragment pdf = new PauseDialogFragment();
+        pdf.show(getSupportFragmentManager(), "PauseDialogFragment");
+    }
+
+    @Override
+    public void onResumeClick(DialogFragment dialog) {
+        dialog.dismiss();
+        gameEnded(true);
+    }
+
+    @Override
+    public void onNewGameClick(DialogFragment dialog) {
+        dialog.dismiss();
+        redraw();
+    }
+
+    @Override
+    public void onMainScreenClick(DialogFragment dialog) {
+//        super.finish();
+        dialog.dismiss();
+
+        gameEnded(false);
+    }
+
+    @Override
+    public void onStartAgainClick(DialogFragment dialog) {
+        dialog.dismiss();
+        redraw();
+    }
+
+    @Override
+    public void onStatsClick(DialogFragment dialog) {
+        dialog.dismiss();
+        super.finish();
+        Intent intent = new Intent(this, StatisticsActivity.class);
+        startActivity(intent);
     }
 }

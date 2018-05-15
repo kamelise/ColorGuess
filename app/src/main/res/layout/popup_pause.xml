@@ -2,7 +2,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:paddingTop="10dp"
+    android:paddingBottom="130dp"
+    android:paddingRight="20dp"
+    android:paddingLeft="20dp">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -15,7 +19,7 @@
             android:textSize="@dimen/popup_title_text_size"
             android:fontFamily="sans-serif-medium"
             android:gravity="center_vertical"
-            android:layout_marginLeft="10dp"
+            android:layout_marginLeft="25dp"
             android:textAllCaps="false"
             android:textColor="#222"/>
     </LinearLayout>
@@ -36,8 +40,8 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:src="@drawable/pause_popup_play_ic"
-            android:tint="@color/colorPrimary"
-            android:layout_marginLeft="20dp"
+            android:tint="@color/grey"
+            android:layout_marginLeft="25dp"
             android:layout_marginRight="20dp"/>
         <TextView
             android:layout_width="match_parent"
@@ -47,7 +51,7 @@
             android:fontFamily="sans-serif-medium"
             android:gravity="center_vertical"
             android:textAllCaps="true"
-            android:textColor="@color/colorPrimary"
+            android:textColor="@color/grey"
             />
     </LinearLayout>
     <LinearLayout
@@ -61,8 +65,8 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:src="@drawable/pause_popup_replay_ic"
-            android:tint="@color/colorPrimary"
-            android:layout_marginLeft="20dp"
+            android:tint="@color/grey"
+            android:layout_marginLeft="25dp"
             android:layout_marginRight="20dp"/>
         <TextView
             android:layout_width="match_parent"
@@ -72,7 +76,7 @@
             android:fontFamily="sans-serif-medium"
             android:gravity="center_vertical"
             android:textAllCaps="true"
-            android:textColor="@color/colorPrimary"
+            android:textColor="@color/grey"
             />
     </LinearLayout>
     <LinearLayout
@@ -86,8 +90,8 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:src="@drawable/pause_popup_home_ic"
-            android:tint="@color/colorPrimary"
-            android:layout_marginLeft="20dp"
+            android:tint="@color/grey"
+            android:layout_marginLeft="25dp"
             android:layout_marginRight="20dp"/>
         <TextView
             android:layout_width="match_parent"
@@ -97,7 +101,7 @@
             android:fontFamily="sans-serif-medium"
             android:gravity="center_vertical"
             android:textAllCaps="true"
-            android:textColor="@color/colorPrimary"
+            android:textColor="@color/grey"
             />
     </LinearLayout>
 </LinearLayout>
