@@ -48,6 +48,9 @@ public class PauseDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        //removing title - for android version < 6.0
+        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        
         View dialog = inflater.inflate(R.layout.popup_pause, container, false);
         LinearLayout resumeBtn = (LinearLayout) dialog.findViewById(R.id.resume);
         resumeBtn.setOnClickListener(new View.OnClickListener() {

@@ -49,6 +49,9 @@ public class ResultDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        //removing title - for android version < 6.0
+        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+
         View dialog = inflater.inflate(R.layout.popup_result, container, false);
         TextView statsBtn = (TextView) dialog.findViewById(R.id.stats_btn);
         statsBtn.setOnClickListener(new View.OnClickListener() {
