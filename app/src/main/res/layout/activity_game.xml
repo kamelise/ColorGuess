@@ -32,6 +32,7 @@
             android:tint="@color/grey"
             android:src="@drawable/ic_menu_game"
             android:id="@+id/top_bar_menu_icon"
+            android:clickable="true"
             android:onClick="onPauseClick"/>
         <TextView
             android:layout_width="wrap_content"

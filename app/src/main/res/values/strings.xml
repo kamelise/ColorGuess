@@ -7,8 +7,8 @@
     <string name="resume">Resume</string>
 
 
-    <string name="best_time_2">2<sup><small>nd</small></sup> Best Time:</string>
-    <string name="best_time_3">3<sup><small>rd</small></sup> Best Time:</string>
+    <string name="best_time_2">2<sup><small>nd</small></sup> Time:</string>
+    <string name="best_time_3">3<sup><small>rd</small></sup> Time:</string>
 
     <string name="result_title_txt_key">result_title_txt</string>
     <string name="stars_num_key">stars_num</string>

@@ -63,6 +63,7 @@ public class GameActivity extends AppCompatActivity
     private LinearLayout activeFieldLine;
     private LinearLayout activeCellView;
 
+    private boolean coordsCalculated = false;
     private int[] xCenterCoordOfFieldCell;
     private int[] xFinalArr;
     private int[] yFinalArr;
@@ -219,35 +220,43 @@ public class GameActivity extends AppCompatActivity
         for (int i = 0; i < activeFieldLine.getChildCount(); i++) {
             LinearLayout fieldCell = (LinearLayout) activeFieldLine.getChildAt(i);
             LinearLayout.LayoutParams fCParams = (LinearLayout.LayoutParams) fieldCell.getLayoutParams();
-            fCParams.setMargins(i != 0 ? (int) (fieldCellLeftMargin) : (int) firstCellLeftMargin, fCParams.topMargin,
-                    i != game.fieldSize - 1 ? (int) (fieldCellRightMargin) : (int) lastCellRightMargin, fCParams.bottomMargin);
+            int left = i != 0 ? (int) (fieldCellLeftMargin) : (int) firstCellLeftMargin;
+            int right = i != game.fieldSize - 1 ? (int) (fieldCellRightMargin) : (int) lastCellRightMargin;
+            fCParams.setMargins(left, fCParams.topMargin,
+                    right, fCParams.bottomMargin);
+            fieldCell.setLayoutParams(fCParams);
+
         }
 
-        //in connection with rounding, activeFieldLine got some margins,
-        // need to calc them and consider them for further calculations
-        int fLMargins = mainField.getWidth() - 4 * ((int) fieldCellLeftMargin + (int) fieldCellRightMargin)
-                - (int) firstCellLeftMargin - (int) lastCellRightMargin - 5 * (int) fieldCellWidth;
+        if (!coordsCalculated) {
+            //in connection with rounding, activeFieldLine got some margins,
+            // need to calc them and consider them for further calculations
+            int fLMargins = mainField.getWidth() - 4 * ((int) fieldCellLeftMargin + (int) fieldCellRightMargin)
+                    - (int) firstCellLeftMargin - (int) lastCellRightMargin - 5 * (int) fieldCellWidth;
 
-        //absolute coord of first field cell center
-        xCenterCoordOfFieldCell[0] = mainField.getLeft() + (int) (fLMargins / 2) + (int) firstCellLeftMargin
-                + (int) fieldCellCenter;
+            //absolute coord of first field cell center
+            xCenterCoordOfFieldCell[0] = mainField.getLeft() + fLMargins / 2 + (int) firstCellLeftMargin
+                    + (int) fieldCellCenter;
 
-        for (int i = 1; i < game.fieldSize; i++) {
-            xCenterCoordOfFieldCell[i] = xCenterCoordOfFieldCell[i - 1] + delta;
-        }
+            for (int i = 1; i < game.fieldSize; i++) {
+                xCenterCoordOfFieldCell[i] = xCenterCoordOfFieldCell[i - 1] + delta;
+            }
 
-        for (int i = 0; i < game.fieldSize; i++) {
-            xFinalArr[i] = Math.round(xCenterCoordOfFieldCell[i] - (int) radius);
-        }
+            for (int i = 0; i < game.fieldSize; i++) {
+                xFinalArr[i] = Math.round(xCenterCoordOfFieldCell[i] - (int) radius);
+            }
 
-        int yCenterCoordBottomCell = mainField.getBottom()
-                - ((int) (fieldLineBottomMargin + extraBottomMargin - overlapMarginVertical) + (int) overlapMarginVertical)
-                - (int) (fieldCellHeight / 2 + 1);
-        yFinalArr[0] = yCenterCoordBottomCell - (int) radius;
+            int yCenterCoordBottomCell = mainField.getBottom()
+                    - ((int) (fieldLineBottomMargin + extraBottomMargin - overlapMarginVertical) + (int) overlapMarginVertical)
+                    - (int) (fieldCellHeight / 2 + 1);
+            yFinalArr[0] = yCenterCoordBottomCell - (int) radius;
 
-        int dy = (int) fieldCellHeight + (int) fieldLineTopMargin + (int) fieldLineBottomMargin;
-        for (int i = 1; i < game.maxMoves; i++) {
-            yFinalArr[i] = yFinalArr[i - 1] - dy;
+            int dy = (int) fieldCellHeight + (int) fieldLineTopMargin + (int) fieldLineBottomMargin;
+            for (int i = 1; i < game.maxMoves; i++) {
+                yFinalArr[i] = yFinalArr[i - 1] - dy;
+            }
+
+            coordsCalculated = true;
         }
 
         if (hasFocus && newRecord) {
@@ -269,7 +278,8 @@ public class GameActivity extends AppCompatActivity
         xFinalArr = new int[game.fieldSize];
         yFinalArr = new int[game.maxMoves];
 
-        addFieldLine(8 * density);
+//        addFieldLine(8 * density);
+        addFieldLine(extraBottomMargin);
         addStackToDrag();
         activeFieldCircles = new HashMap<>();
         chronometer.start();
@@ -316,9 +326,12 @@ public class GameActivity extends AppCompatActivity
 
             LinearLayout.LayoutParams fCParams = new LinearLayout.LayoutParams((int) fieldCellWidth, (int) fieldCellHeight);
 
-            fCParams.setMargins(i != 0 ? (int) fieldCellLeftMargin : (int) firstCellLeftMargin, (int) overlapMarginVertical,
-                    i != game.fieldSize - 1 ? (int) fieldCellRightMargin : (int) lastCellRightMargin,
+            int left = i != 0 ? (int) fieldCellLeftMargin : (int) firstCellLeftMargin;
+            int right = i != game.fieldSize - 1 ? (int) fieldCellRightMargin : (int) lastCellRightMargin;
+            fCParams.setMargins(left, (int) overlapMarginVertical,
+                    right,
                     (int) (overlapMarginVertical));
+
             fieldCell.setLayoutParams(fCParams);
             fieldCell.setBackgroundResource(R.drawable.field_cell);
             fieldCell.setId(i);
