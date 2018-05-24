@@ -1,4 +1,4 @@
-package me.gotidea.kamelise.colorguess;
+package me.gotidea.kamelise.colorguess.ui;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.LinearLayout;
 
-;
+;import me.gotidea.kamelise.colorguess.R;
 
 /**
  * Created by kamelise on 7/18/17.

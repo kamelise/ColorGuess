@@ -1,4 +1,4 @@
-package me.gotidea.kamelise.colorguess;
+package me.gotidea.kamelise.colorguess.ui;
 
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +23,11 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import me.gotidea.kamelise.colorguess.Game;
+import me.gotidea.kamelise.colorguess.R;
+import me.gotidea.kamelise.colorguess.db.GameResult;
+import me.gotidea.kamelise.colorguess.db.LocalDatabase;
 
 public class GameActivity extends AppCompatActivity
         implements PauseDialogFragment.PauseDialogListener, ResultDialogFragment.ResultDialogListener {
@@ -53,7 +58,6 @@ public class GameActivity extends AppCompatActivity
     private LinearLayout mainField;
     private LinearLayout guessedLayout;
     private LinearLayout stackLayout;
-    //    private RelativeLayout topBarLayout;
     private LinearLayout solutionLine;
     private Chronometer chronometer;
     private TextView bestTimeTV;
@@ -278,7 +282,6 @@ public class GameActivity extends AppCompatActivity
         xFinalArr = new int[game.fieldSize];
         yFinalArr = new int[game.maxMoves];
 
-//        addFieldLine(8 * density);
         addFieldLine(extraBottomMargin);
         addStackToDrag();
         activeFieldCircles = new HashMap<>();
@@ -474,7 +477,7 @@ public class GameActivity extends AppCompatActivity
     }
 
     private void gameOnPause(boolean paused) {
-        if (!game.isEnded) {
+        if (!game.isEnded()) {
             if (paused) {
                 pausedTime = SystemClock.elapsedRealtime();
                 chronometer.stop();

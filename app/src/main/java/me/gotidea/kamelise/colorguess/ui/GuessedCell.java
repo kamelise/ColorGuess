@@ -1,10 +1,12 @@
-package me.gotidea.kamelise.colorguess;
+package me.gotidea.kamelise.colorguess.ui;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.support.v4.content.ContextCompat;
 import android.widget.LinearLayout;
+
+import me.gotidea.kamelise.colorguess.R;
 
 /**
  * Created by kamelise on 5/11/17.

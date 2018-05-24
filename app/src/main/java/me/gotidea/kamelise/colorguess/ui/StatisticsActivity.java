@@ -1,4 +1,4 @@
-package me.gotidea.kamelise.colorguess;
+package me.gotidea.kamelise.colorguess.ui;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,6 +16,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import me.gotidea.kamelise.colorguess.AppExecutors;
+import me.gotidea.kamelise.colorguess.R;
+import me.gotidea.kamelise.colorguess.db.GameResult;
+import me.gotidea.kamelise.colorguess.db.LocalDatabase;
+import me.gotidea.kamelise.colorguess.db.ResultsArchive;
 
 public class StatisticsActivity extends AppCompatActivity {
 

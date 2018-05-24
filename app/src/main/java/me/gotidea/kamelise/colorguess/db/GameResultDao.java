@@ -1,4 +1,4 @@
-package me.gotidea.kamelise.colorguess;
+package me.gotidea.kamelise.colorguess.db;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
@@ -12,7 +12,7 @@ import java.util.List;
  */
 
 @Dao
-interface GameResultDao {
+public interface GameResultDao {
     @Insert
     long insertGameRes(GameResult gameResult);
 

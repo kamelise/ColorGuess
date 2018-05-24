@@ -1,4 +1,4 @@
-package me.gotidea.kamelise.colorguess;
+package me.gotidea.kamelise.colorguess.ui;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -10,6 +10,9 @@ import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.RelativeLayout;
+
+import me.gotidea.kamelise.colorguess.Game;
+import me.gotidea.kamelise.colorguess.R;
 
 /**
  * Created by kamelise on 5/12/17.

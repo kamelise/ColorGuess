@@ -1,9 +1,11 @@
-package me.gotidea.kamelise.colorguess;
+package me.gotidea.kamelise.colorguess.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+
+import me.gotidea.kamelise.colorguess.R;
 
 public class MainActivity extends AppCompatActivity {
 
