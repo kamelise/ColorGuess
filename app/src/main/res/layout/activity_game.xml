@@ -7,7 +7,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:background="@color/boardColor"
     android:id="@+id/parent"
-    tools:context=".ui.GameActivity">
+    tools:context=".ui.activity.GameActivity">
     <!--<Button-->
         <!--android:layout_width="36dp"-->
         <!--android:layout_height="36dp"-->

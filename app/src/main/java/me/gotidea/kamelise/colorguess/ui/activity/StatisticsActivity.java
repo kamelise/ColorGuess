@@ -1,4 +1,4 @@
-package me.gotidea.kamelise.colorguess.ui;
+package me.gotidea.kamelise.colorguess.ui.activity;
 
 import android.content.Context;
 import android.content.DialogInterface;

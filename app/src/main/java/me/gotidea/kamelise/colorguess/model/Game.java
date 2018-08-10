@@ -1,11 +1,12 @@
-package me.gotidea.kamelise.colorguess;
+package me.gotidea.kamelise.colorguess.model;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 
-import me.gotidea.kamelise.colorguess.ui.GameActivity;
+import me.gotidea.kamelise.colorguess.R;
+import me.gotidea.kamelise.colorguess.ui.activity.GameActivity;
 
 /**
  * Created by kamelise on 7/2/17.
@@ -54,10 +55,6 @@ public class Game {
 
     public boolean isEnded() {
         return isEnded;
-    }
-
-    public void setEnded(boolean ended) {
-        isEnded = ended;
     }
 
     private void initCodedArr() {

@@ -1,4 +1,4 @@
-package me.gotidea.kamelise.colorguess.ui;
+package me.gotidea.kamelise.colorguess.ui.activity;
 
 import android.content.Context;
 import android.content.Intent;
@@ -24,10 +24,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import me.gotidea.kamelise.colorguess.Game;
+import me.gotidea.kamelise.colorguess.model.Game;
 import me.gotidea.kamelise.colorguess.R;
 import me.gotidea.kamelise.colorguess.db.GameResult;
 import me.gotidea.kamelise.colorguess.db.LocalDatabase;
+import me.gotidea.kamelise.colorguess.ui.popup.PauseDialogFragment;
+import me.gotidea.kamelise.colorguess.ui.popup.ResultDialogFragment;
+import me.gotidea.kamelise.colorguess.ui.elements.SolutionCell;
+import me.gotidea.kamelise.colorguess.ui.elements.CircleCell;
+import me.gotidea.kamelise.colorguess.ui.elements.GuessedCell;
+import me.gotidea.kamelise.colorguess.ui.elements.ShadowCircle;
 
 public class GameActivity extends AppCompatActivity
         implements PauseDialogFragment.PauseDialogListener, ResultDialogFragment.ResultDialogListener {

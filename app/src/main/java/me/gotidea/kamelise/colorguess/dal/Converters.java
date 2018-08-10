@@ -1,4 +1,4 @@
-package me.gotidea.kamelise.colorguess.db;
+package me.gotidea.kamelise.colorguess.dal;
 
 import android.arch.persistence.room.TypeConverter;
 

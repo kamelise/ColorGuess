@@ -1,4 +1,4 @@
-package me.gotidea.kamelise.colorguess.db;
+package me.gotidea.kamelise.colorguess.dal;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
@@ -6,6 +6,8 @@ import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 
 import java.util.List;
+
+import me.gotidea.kamelise.colorguess.db.GameResult;
 
 /**
  * Created by kamelise on 3/23/18.

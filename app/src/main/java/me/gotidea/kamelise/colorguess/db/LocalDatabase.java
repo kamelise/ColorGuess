@@ -6,6 +6,10 @@ import android.arch.persistence.room.RoomDatabase;
 import android.arch.persistence.room.TypeConverters;
 import android.content.Context;
 
+import me.gotidea.kamelise.colorguess.dal.Converters;
+import me.gotidea.kamelise.colorguess.dal.GameResultDao;
+import me.gotidea.kamelise.colorguess.dal.ResultsArchiveDao;
+
 /**
  * Created by kamelise on 3/23/18.
  */

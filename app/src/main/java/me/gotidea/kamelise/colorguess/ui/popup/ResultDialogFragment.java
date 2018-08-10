@@ -1,4 +1,4 @@
-package me.gotidea.kamelise.colorguess.ui;
+package me.gotidea.kamelise.colorguess.ui.popup;
 
 import android.content.Context;
 import android.os.Bundle;
