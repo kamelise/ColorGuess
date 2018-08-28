@@ -41,8 +41,7 @@
                 android:textSize="@dimen/popup_text_size"
                 android:fontFamily="sans-serif"
                 android:gravity="center_vertical"
-                android:textAllCaps="true"
-                android:textColor="@color/text_color"/>
+                android:textAllCaps="true"/>
         </LinearLayout>
 
         <LinearLayout
@@ -71,8 +70,7 @@
                 android:textSize="@dimen/popup_text_size"
                 android:fontFamily="sans-serif"
                 android:gravity="center_vertical"
-                android:textAllCaps="true"
-                android:textColor="@color/text_color"/>
+                android:textAllCaps="true"/>
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
@@ -99,8 +97,7 @@
                 android:textSize="@dimen/popup_text_size"
                 android:fontFamily="sans-serif"
                 android:gravity="center_vertical"
-                android:textAllCaps="true"
-                android:textColor="@color/text_color"/>
+                android:textAllCaps="true" />
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
@@ -127,8 +124,7 @@
                 android:textSize="@dimen/popup_text_size"
                 android:fontFamily="sans-serif"
                 android:gravity="center_vertical"
-                android:textAllCaps="true"
-                android:textColor="@color/text_color"/>
+                android:textAllCaps="true"/>
         </LinearLayout>
     </LinearLayout>
 
