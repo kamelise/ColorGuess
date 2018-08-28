@@ -56,8 +56,10 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, StatisticsActivity.class));
                 break;
             case R.id.settings:
+                startActivity(new Intent(this, SettingsActivity.class));
                 break;
             case R.id.help:
+                startActivity(new Intent(this, HelpActivity.class));
                 break;
         }
     }

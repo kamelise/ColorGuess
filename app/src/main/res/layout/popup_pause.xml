@@ -4,9 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingTop="10dp"
-    android:paddingBottom="30dp"
-    android:paddingRight="20dp"
-    android:paddingLeft="20dp">
+    android:paddingBottom="30dp">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -20,8 +18,10 @@
             android:fontFamily="sans-serif-medium"
             android:gravity="center_vertical"
             android:layout_marginLeft="@dimen/pause_menu_margin_left"
+            android:paddingRight="@dimen/popup_side_padding"
+            android:paddingLeft="@dimen/popup_side_padding"
             android:textAllCaps="false"
-            android:textColor="#222"/>
+            android:textColor="#222" />
     </LinearLayout>
     <View
         android:layout_width="match_parent"
@@ -36,6 +36,8 @@
         android:orientation="horizontal"
         android:background="?attr/selectableItemBackground"
         android:layout_marginTop="20dp"
+        android:paddingRight="@dimen/popup_side_padding"
+        android:paddingLeft="@dimen/popup_side_padding"
         android:id="@+id/resume">
         <ImageView
             android:layout_width="wrap_content"
@@ -51,7 +53,7 @@
             android:layout_height="match_parent"
             android:text="Resume"
             android:textSize="@dimen/popup_text_size"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="sans-serif"
             android:gravity="center_vertical"
             android:textAllCaps="true"
             android:textColor="@color/grey"/>
@@ -62,6 +64,8 @@
         android:layout_weight="1"
         android:orientation="horizontal"
         android:background="?attr/selectableItemBackground"
+        android:paddingRight="@dimen/popup_side_padding"
+        android:paddingLeft="@dimen/popup_side_padding"
         android:id="@+id/new_game">
         <ImageView
             android:layout_width="wrap_content"
@@ -76,7 +80,7 @@
             android:layout_height="match_parent"
             android:text="New Game"
             android:textSize="@dimen/popup_text_size"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="sans-serif"
             android:gravity="center_vertical"
             android:textAllCaps="true"
             android:textColor="@color/grey"/>
@@ -87,6 +91,8 @@
         android:layout_weight="1"
         android:orientation="horizontal"
         android:background="?attr/selectableItemBackground"
+        android:paddingRight="@dimen/popup_side_padding"
+        android:paddingLeft="@dimen/popup_side_padding"
         android:id="@+id/main_screen">
         <ImageView
             android:layout_width="wrap_content"
@@ -101,7 +107,7 @@
             android:layout_height="match_parent"
             android:text="Home"
             android:textSize="@dimen/popup_text_size"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="sans-serif"
             android:gravity="center_vertical"
             android:textAllCaps="true"
             android:textColor="@color/grey"/>

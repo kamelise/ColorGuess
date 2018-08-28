@@ -5,8 +5,9 @@
 
     <dimen name="popup_width">300dp</dimen>
     <dimen name="popup_height">440dp</dimen>
-    <dimen name="popup_title_text_size">20sp</dimen>
-    <dimen name="popup_text_size">14sp</dimen>
+    <dimen name="popup_title_text_size">22sp</dimen>
+    <dimen name="popup_text_size">16sp</dimen>
+    <dimen name="popup_side_padding">20dp</dimen>
 
     <dimen name="circle_radius">17dp</dimen>
 
@@ -57,5 +58,10 @@
     <dimen name="res_stars_padding_top">20dp</dimen>
     <dimen name="res_stars_padding_bottom">20dp</dimen>
     <dimen name="res_btns_margin_bottom">25dp</dimen>
+
+    <dimen name="settings_activity_icon_size">48dp</dimen>
+    <dimen name="settings_menu_side_padding">70dp</dimen>
+    <dimen name="settings_menu_top_bottom_padding">150dp</dimen>
+    <dimen name="settings_menu_item_side_padding">20dp</dimen>
 
 </resources>

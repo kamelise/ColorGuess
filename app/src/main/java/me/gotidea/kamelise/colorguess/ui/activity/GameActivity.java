@@ -1,11 +1,13 @@
 package me.gotidea.kamelise.colorguess.ui.activity;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -24,16 +26,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import me.gotidea.kamelise.colorguess.model.Game;
 import me.gotidea.kamelise.colorguess.R;
 import me.gotidea.kamelise.colorguess.db.GameResult;
 import me.gotidea.kamelise.colorguess.db.LocalDatabase;
-import me.gotidea.kamelise.colorguess.ui.popup.PauseDialogFragment;
-import me.gotidea.kamelise.colorguess.ui.popup.ResultDialogFragment;
-import me.gotidea.kamelise.colorguess.ui.elements.SolutionCell;
+import me.gotidea.kamelise.colorguess.model.Game;
 import me.gotidea.kamelise.colorguess.ui.elements.CircleCell;
 import me.gotidea.kamelise.colorguess.ui.elements.GuessedCell;
 import me.gotidea.kamelise.colorguess.ui.elements.ShadowCircle;
+import me.gotidea.kamelise.colorguess.ui.elements.SolutionCell;
+import me.gotidea.kamelise.colorguess.ui.popup.PauseDialogFragment;
+import me.gotidea.kamelise.colorguess.ui.popup.ResultDialogFragment;
 
 public class GameActivity extends AppCompatActivity
         implements PauseDialogFragment.PauseDialogListener, ResultDialogFragment.ResultDialogListener {
@@ -571,21 +573,69 @@ public class GameActivity extends AppCompatActivity
     @Override
     public void onResumeClick(DialogFragment dialog) {
         dialog.dismiss();
-        gameEnded(true);
     }
 
     @Override
     public void onNewGameClick(DialogFragment dialog) {
         dialog.dismiss();
+        showConfirmation();
         redraw();
+    }
+
+    private void showConfirmation() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("End Game");
+        builder.setMessage("The current game will be ended and loss will be counted towards play stats.");
+
+        builder.setPositiveButton("Proceed", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int which) {
+//                appExecutors.diskIO().execute(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        GameResult[] results = db.gameResultDao().getGameResults();
+//                        Date dateArchived = Calendar.getInstance().getTime();
+//                        for (GameResult res: results) {
+//                            ResultsArchive archiveRow = new ResultsArchive();
+//                            archiveRow.convertGameResult(res, dateArchived);
+//                            db.resultsArchiveDao().insertResultsArchiveRow(archiveRow);
+//                            db.gameResultDao().delete(res);
+//                        }
+//                    }
+//                });
+//
+//                SharedPreferences sharedPref = getSharedPreferences(getString(R.string.preference_file_key),
+//                        Context.MODE_PRIVATE);
+//                SharedPreferences.Editor editor = sharedPref.edit();
+//                editor.putInt(getString(R.string.consequent_wins_key), 0);
+//                editor.putLong(getString(R.string.best_time_key), 0L);
+//                editor.apply();
+//
+//                initData();
+//                parentLL.invalidate();
+
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                // Do nothing
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
     @Override
     public void onMainScreenClick(DialogFragment dialog) {
-//        super.finish();
+        super.finish();
         dialog.dismiss();
-
-        gameEnded(false);
     }
 
     @Override

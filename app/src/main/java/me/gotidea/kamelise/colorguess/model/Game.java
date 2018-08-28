@@ -140,16 +140,22 @@ public class Game {
             if (currMove <= maxMoves && placesGuessed < 5) {
                 gameActivity.addFieldLine(0);
                 initActiveArr();
+//            } else
+//                boolean won = false;
+//                if (placesGuessed == 5)
+//                    won = true;
+//                endGame(won);
+//            }
+            } else if (placesGuessed == 5) {
+                endGame(true);
             } else {
-                boolean won = false;
-                if (placesGuessed == 5)
-                    won = true;
-                gameEnd(won);
+                endGame(false);
             }
         }
     }
 
-    private void gameEnd(boolean won) {
+    public void endGame(boolean won) {
+        isEnded = true;
         gameActivity.gameEnded(won);
     }
 
