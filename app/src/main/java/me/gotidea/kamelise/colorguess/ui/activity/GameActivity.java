@@ -507,25 +507,17 @@ public class GameActivity extends AppCompatActivity
         long min = TimeUnit.MILLISECONDS.toMinutes(time);
         long sec = TimeUnit.MILLISECONDS.toSeconds(time) % 60;
 
-        final GameResult gameResult = new GameResult();
-        gameResult.setDate(new Date());
-        gameResult.setTimePlayed(time);
-        gameResult.setWon(won);
-        gameResult.setMovesTaken((byte) (game.getCurrMove() - 1));
-        executor.submit(new Runnable() {
-            @Override
-            public void run() {
-                db.gameResultDao().insertGameRes(gameResult);
-            }
-        });
-        String timePlayed = String.format(TIME_FORMAT, min, sec);
-        chronometer.setText(timePlayed);
-        addSolutionCells();
+        storeDbResult(won, time);
 
         int winsInARow = sharedPref.getInt(getString(R.string.consequent_wins_key), 0);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putInt(getString(R.string.consequent_wins_key), won ? ++winsInARow : 0);
         editor.apply();
+
+        String timePlayed = String.format(TIME_FORMAT, min, sec);
+        chronometer.setText(timePlayed);
+        addSolutionCells();
+
 
         int picResId = R.drawable.ic_confetti;
         String resTitleTxt = getResources().getString(R.string.result_title_txt_won);
@@ -565,6 +557,20 @@ public class GameActivity extends AppCompatActivity
 
     }
 
+    private void storeDbResult(boolean won, long time) {
+        final GameResult gameResult = new GameResult();
+        gameResult.setDate(new Date());
+        gameResult.setTimePlayed(time);
+        gameResult.setWon(won);
+        gameResult.setMovesTaken((byte) (game.getCurrMove() - 1));
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                db.gameResultDao().insertGameRes(gameResult);
+            }
+        });
+    }
+
     public void onPauseClick(View view) {
         PauseDialogFragment pdf = new PauseDialogFragment();
         pdf.show(getSupportFragmentManager(), "PauseDialogFragment");
@@ -578,8 +584,12 @@ public class GameActivity extends AppCompatActivity
     @Override
     public void onNewGameClick(DialogFragment dialog) {
         dialog.dismiss();
-        showConfirmation();
-        redraw();
+
+        if (!game.isEnded()) {
+            showConfirmation();
+        } else {
+            redraw();
+        }
     }
 
     private void showConfirmation() {
@@ -591,30 +601,14 @@ public class GameActivity extends AppCompatActivity
         builder.setPositiveButton("Proceed", new DialogInterface.OnClickListener() {
 
             public void onClick(DialogInterface dialog, int which) {
-//                appExecutors.diskIO().execute(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        GameResult[] results = db.gameResultDao().getGameResults();
-//                        Date dateArchived = Calendar.getInstance().getTime();
-//                        for (GameResult res: results) {
-//                            ResultsArchive archiveRow = new ResultsArchive();
-//                            archiveRow.convertGameResult(res, dateArchived);
-//                            db.resultsArchiveDao().insertResultsArchiveRow(archiveRow);
-//                            db.gameResultDao().delete(res);
-//                        }
-//                    }
-//                });
-//
-//                SharedPreferences sharedPref = getSharedPreferences(getString(R.string.preference_file_key),
-//                        Context.MODE_PRIVATE);
-//                SharedPreferences.Editor editor = sharedPref.edit();
-//                editor.putInt(getString(R.string.consequent_wins_key), 0);
-//                editor.putLong(getString(R.string.best_time_key), 0L);
-//                editor.apply();
-//
-//                initData();
-//                parentLL.invalidate();
+                long time = SystemClock.elapsedRealtime() - chronometer.getBase();
+                storeDbResult(false, time);
 
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putInt(getString(R.string.consequent_wins_key), 0);
+                editor.apply();
+
+                redraw();
             }
         });
 
